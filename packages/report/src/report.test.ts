@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 import { parseReport, parseSeverityCell } from "./parse.js";
-import { redactReport } from "./redact.js";
+import { redactReport, redactionTargets } from "./redact.js";
 import { effectiveVisibility, redactUntilFor } from "./visibility.js";
 import { parseGitHubUrl } from "./github.js";
 import { sha256Hex } from "./hash.js";
@@ -10,13 +10,15 @@ import { sha256Hex } from "./hash.js";
 const fixtures = resolve(import.meta.dirname, "../fixtures");
 const client = readFileSync(resolve(fixtures, "client-sample.md"), "utf8");
 const internal = readFileSync(resolve(fixtures, "internal-sample.md"), "utf8");
+const legacy = readFileSync(resolve(fixtures, "legacy-sample.md"), "utf8");
 
 describe("parse: client report (audit-cycle template)", () => {
   const p = parseReport(client);
   it("detects format and counts findings by tier", () => {
     expect(p.format).toBe("client");
     expect(p.counts).toEqual({ critical: 1, high: 1, medium: 1, low: 1, info: 1 });
-    expect(p.declaredCounts).toEqual({ critical: 1, high: 1, medium: 1, low: 1, info: 1 });
+    expect(p.countsSource).toBe("declared");
+    expect(p.findingCounts).toEqual(p.counts);
     expect(p.warnings.filter((w) => w.includes("≠"))).toEqual([]);
   });
   it("extracts finding fields", () => {
@@ -42,7 +44,7 @@ describe("parse: internal report (report-template)", () => {
   it("detects format, counts and metrics", () => {
     expect(p.format).toBe("internal");
     expect(p.counts).toEqual({ critical: 0, high: 1, medium: 1, low: 0, info: 0 });
-    expect(p.declaredCounts).toEqual({ critical: 0, high: 1, medium: 1, low: 0, info: 0 });
+    expect(p.declaredCounts).toEqual(p.counts);
     expect(p.highestSeverity).toBe(8);
     expect(p.riskScore).toBe(8);
     expect(p.metrics.totalItems).toBe(910);
@@ -59,12 +61,51 @@ describe("parse: internal report (report-template)", () => {
   });
 });
 
+describe("parse: legacy free-form report (pre-7 corpus)", () => {
+  const p = parseReport(legacy);
+  it("takes counts from the declared table and ignores unconfirmed candidates", () => {
+    expect(p.format).toBe("legacy");
+    expect(p.counts).toEqual({ critical: 1, high: 1, medium: 1, low: 1, info: 0 });
+    expect(p.countsSource).toBe("declared");
+    expect(p.findings.map((f) => f.id)).toEqual(["EX-01", "EX-02", "EX-03", "EX-04"]);
+    expect(p.findings.map((f) => f.tier)).toEqual(["critical", "high", "medium", "low"]);
+    expect(p.warnings.filter((w) => w.includes("≠"))).toEqual([]);
+  });
+  it("reads bullet severities, heading tags and other scales", () => {
+    const byId = Object.fromEntries(p.findings.map((f) => [f.id, f]));
+    expect(byId["EX-01"]!.score).toBe(10);
+    expect(byId["EX-02"]!.score).toBeNull(); // "4 (High)" is not on the 1-10 scale
+    expect(byId["EX-03"]!.score).toBe(4); // "Medium (4 / 10)": explicit /10 keeps the number
+    expect(byId["EX-04"]!.score).toBe(2);
+    expect(byId["EX-01"]!.location).toBe("`src/withdraw.rs:98`");
+  });
+  it("gets risk score, commit and highest severity", () => {
+    expect(p.riskScore).toBe(10);
+    expect(p.highestSeverity).toBe(10);
+    expect(p.meta.commit).toBe("abcdef0123456789abcdef0123456789abcdef01");
+    expect(p.meta.date).toBe("2026-06-20");
+  });
+  it("floors highest severity at the declared top tier when blocks are unparseable", () => {
+    const only = legacy.replace("- **Severity:** 10/10 — Critical", "- **Severity:** see below");
+    const q = parseReport(only);
+    expect(q.findings.find((f) => f.id === "EX-01")!.tier).toBeNull();
+    expect(q.highestSeverity).toBe(9);
+    expect(redactionTargets(q).map((f) => f.id)).toEqual(["EX-02", "EX-01"]); // unclassified withheld too
+  });
+});
+
 describe("severity cell parsing", () => {
-  it("handles both layouts", () => {
+  it("handles every notation seen in the wild", () => {
     expect(parseSeverityCell("🔴 Critical (internal: 10)")).toEqual({ tier: "critical", score: 10 });
     expect(parseSeverityCell("8 — 🟠 HIGH")).toEqual({ tier: "high", score: 8 });
     expect(parseSeverityCell("🟡 Medium")).toEqual({ tier: "medium", score: null });
     expect(parseSeverityCell("⚪ Informational (internal: 1)")).toEqual({ tier: "info", score: 1 });
+    expect(parseSeverityCell("10/10 — Critical")).toEqual({ tier: "critical", score: 10 });
+    expect(parseSeverityCell("4 (High)")).toEqual({ tier: "high", score: null });
+    expect(parseSeverityCell("Medium (4 / 10)")).toEqual({ tier: "medium", score: 4 });
+    expect(parseSeverityCell("4 / 6 — High")).toEqual({ tier: "high", score: null });
+    expect(parseSeverityCell("6 / 10 — Medium")).toEqual({ tier: "medium", score: 6 });
+    expect(parseSeverityCell("2 / 10 — INFO/LOW")).toEqual({ tier: "info", score: 2 });
     expect(parseSeverityCell("n/a")).toBeNull();
   });
 });
@@ -94,8 +135,16 @@ describe("redaction", () => {
     expect(p2.counts).toEqual(p.counts);
     expect(p2.findings.find((f) => f.id === "AUD-01")!.title).toBe("[redacted]");
   });
+  it("redacts legacy reports too", () => {
+    const pl = parseReport(legacy);
+    const rl = redactReport(legacy, pl);
+    expect(rl).not.toContain("Withdraw accounting mismatch");
+    expect(rl).not.toContain("Missing signer check on admin path");
+    expect(rl).toContain("Rounding favours the caller");
+    expect(rl).toContain("| Critical (9-10) | 1 |");
+  });
   it("is a no-op when nothing is Critical/High", () => {
-    const only = internal.replace("8 — 🟠 HIGH", "5 — 🟡 MEDIUM");
+    const only = internal.replace("8 — 🟠 HIGH", "5 — 🟡 MEDIUM").replace("| 8 | 🟠 HIGH | 1 |", "| 8 | 🟠 HIGH | 0 |").replace("| 5 | 🟡 MEDIUM | 1 |", "| 5 | 🟡 MEDIUM | 2 |");
     const pp = parseReport(only);
     expect(redactReport(only, pp)).toBe(only);
   });

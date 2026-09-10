@@ -80,6 +80,17 @@ else
   echo "  auditor-sandbox:latest present (pnpm dev -- --rebuild-images to rebuild)"
 fi
 
+# ── hand-run example audits → site (idempotent upsert by owner/repo/commit) ─────
+if [ -d "examples i runned local" ]; then
+  step "example audits"
+  EXAMPLES_MODEL="$(grep -E '^EXAMPLES_MODEL=' .env | cut -d= -f2- | tr -d '[:space:]' || true)"
+  if [ -n "$EXAMPLES_MODEL" ]; then
+    pnpm exec tsx scripts/ingest-examples.ts --model "$EXAMPLES_MODEL" --visibility "${EXAMPLES_VISIBILITY:-public}" 2>&1 | grep -vE 'injected env|^\s*$' | tail -4
+  else
+    echo "  skipped: set EXAMPLES_MODEL in .env (the model those audits were run with) to publish them"
+  fi
+fi
+
 if [ "$SETUP_ONLY" = 1 ]; then
   echo; echo "setup complete."; exit 0
 fi

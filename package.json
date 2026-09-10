@@ -23,6 +23,7 @@
     "sandbox:build": "docker build -t auditor-sandbox:latest -f sandbox/Dockerfile .",
     "sandbox:proxy:build": "docker build -t auditor-egress-proxy:latest -f sandbox/egress-proxy/Dockerfile sandbox/egress-proxy",
     "ingest": "tsx scripts/ingest-report.ts",
+    "ingest:examples": "tsx scripts/ingest-examples.ts",
     "refund": "tsx scripts/refund.ts",
     "check:secrets": "bash scripts/check-secrets.sh",
     "hooks:install": "git config core.hooksPath .githooks && echo 'git hooks installed (.githooks)'"

@@ -16,6 +16,12 @@ when nothing changed. `Ctrl+C` stops worker and web; `pnpm db:down` also stops P
 
 Options: `pnpm dev -- --rebuild-images` (after changing `sandbox/`), `pnpm dev -- --setup-only`.
 `bash scripts/dev-up.sh` = setup + full build + tests, without starting anything.
+
+**Audits you ran by hand** go in `examples i runned local/<Org>/<repo>/` (a git clone with
+the corpus's `audit_1/REPORT.md` inside; the folder is gitignored). Set `EXAMPLES_MODEL`
+in `.env` to the model you used and `pnpm dev` publishes them all on the site (repo and
+commit come from the clone). Dry run without a database:
+`pnpm ingest:examples -- --dry-run`.
 Secrets live in `.env` (gitignored). To run a real audit you need `ANTHROPIC_API_KEY`
 there; to enqueue without paying use the operator button on the job page with `ADMIN_TOKEN`.
 

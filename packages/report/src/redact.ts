@@ -2,6 +2,9 @@
  * Redaction for `public_redacted` reports: Critical and High findings are withheld
  * (block, summary-table rows, and any paragraph or bullet that names the finding id)
  * while counts and everything else stay visible. Enforced in code, not policy text.
+ *
+ * Conservative rule: when the report declares more Critical/High findings than the
+ * parser could classify, every unclassified finding block is withheld too.
  */
 import { tierLabel, type Finding, type ParsedReport, type SeverityTier } from "./types.js";
 
@@ -17,13 +20,22 @@ function escapeRe(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+/** Which findings must be withheld for the given tiers. */
+export function redactionTargets(parsed: ParsedReport, tiers: readonly SeverityTier[] = REDACTED_TIERS): Finding[] {
+  const set = new Set(tiers);
+  const classified = parsed.findings.filter((f) => f.tier !== null && set.has(f.tier));
+  const declared = tiers.reduce((n, t) => n + parsed.counts[t], 0);
+  const unclassified = parsed.findings.filter((f) => f.tier === null);
+  return declared > classified.length ? [...classified, ...unclassified] : classified;
+}
+
 /**
  * The placeholder keeps the id and a Severity row in the template's own format so a
- * redacted report re-parses to the same counts as the original (the counts on-chain).
+ * redacted report re-parses to the same finding tiers as the original.
  */
 function placeholder(f: Finding, until: string | null): string {
   const when = until ? ` or until ${until}` : "";
-  const sev = `${tierLabel(f.tier)}${f.score ? ` (internal: ${f.score})` : ""}`;
+  const sev = f.tier ? `${tierLabel(f.tier)}${f.score ? ` (internal: ${f.score})` : ""}` : "withheld";
   return [
     `#### ${f.id} — [redacted]`,
     "",
@@ -40,8 +52,7 @@ function placeholder(f: Finding, until: string | null): string {
 }
 
 export function redactReport(markdown: string, parsed: ParsedReport, opts: RedactOptions = {}): string {
-  const tiers = new Set(opts.tiers ?? REDACTED_TIERS);
-  const targets = parsed.findings.filter((f) => tiers.has(f.tier));
+  const targets = redactionTargets(parsed, opts.tiers ?? REDACTED_TIERS);
   if (targets.length === 0) return markdown;
 
   const until =
@@ -72,7 +83,6 @@ export function redactReport(markdown: string, parsed: ParsedReport, opts: Redac
     const f = byId.get(m[1]!)!;
     const trimmed = line.trim();
     if (trimmed.startsWith("|")) {
-      // Keep the id and the severity cell; blank everything else.
       const cells = trimmed.slice(1, trimmed.endsWith("|") ? -1 : undefined).split("|");
       const rebuilt = cells.map((c) => {
         const t = c.trim();
@@ -87,7 +97,6 @@ export function redactReport(markdown: string, parsed: ParsedReport, opts: Redac
       out[i] = trimmed.replace(/^(#{1,6}\s+).*$/, `$1${f.id} — [redacted]`);
       continue;
     }
-    // Paragraph or list item: blank the contiguous non-empty run around it.
     let s = i;
     while (s > 0 && lines[s - 1]!.trim() !== "" && !/^#{1,6}\s/.test(lines[s - 1]!) && !lines[s - 1]!.trim().startsWith("|")) s--;
     let e = i;

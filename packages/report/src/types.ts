@@ -11,11 +11,12 @@ export interface SeverityCounts {
 }
 
 export interface Finding {
-  /** "AUD-01" (client report) or "F-001" (internal report). */
+  /** "AUD-01", "F-001", "SF-01", "KL-01" … whatever id scheme the report uses. */
   id: string;
   title: string;
-  tier: SeverityTier;
-  /** Internal 1-10 score when the report states it. */
+  /** Null when the block carries no recognisable severity (redacted conservatively). */
+  tier: SeverityTier | null;
+  /** Internal 1-10 score when the report states one on that scale. */
   score: number | null;
   status: string | null;
   location: string | null;
@@ -25,20 +26,27 @@ export interface Finding {
   endLine: number;
 }
 
-export type ReportFormat = "client" | "internal" | "unknown";
+/** "client" = templates/audit-report.md, "internal" = templates/report-template.md, "legacy" = free-form pre-7.x reports with a Severity Distribution table. */
+export type ReportFormat = "client" | "internal" | "legacy" | "unknown";
 
 export interface ParsedReport {
   format: ReportFormat;
-  /** Counts derived from the parsed finding blocks (ground truth for redaction and on-chain). */
+  /**
+   * Severity counts. The report's own summary table when it has one (the auditor's
+   * asserted totals), otherwise derived from the parsed finding blocks.
+   */
   counts: SeverityCounts;
-  /** Counts the report declares in its summary table, if present. Compared against `counts`. */
+  /** Where `counts` came from. */
+  countsSource: "declared" | "findings" | "none";
+  /** Counts the report declares in its summary table, if present. */
   declaredCounts: SeverityCounts | null;
+  /** Counts derived from parsed finding blocks (null tiers excluded). */
+  findingCounts: SeverityCounts;
   findings: Finding[];
   /** Highest internal severity (1-10). Null when there are no findings. */
   highestSeverity: number | null;
-  /** Internal "Repository Risk Score" when present (client reports omit it by design). */
+  /** "Repository Risk Score" when present. */
   riskScore: number | null;
-  /** Free-form metadata pulled from the executive summary / cover table. */
   meta: {
     repository: string | null;
     commit: string | null;
@@ -82,7 +90,7 @@ export function scoreForTier(t: SeverityTier): number {
   }
 }
 
-export function tierLabel(t: SeverityTier): string {
+export function tierLabel(t: SeverityTier | null): string {
   switch (t) {
     case "critical":
       return "Critical";
@@ -92,8 +100,10 @@ export function tierLabel(t: SeverityTier): string {
       return "Medium";
     case "low":
       return "Low";
-    default:
+    case "info":
       return "Informational";
+    default:
+      return "Unclassified";
   }
 }
 
