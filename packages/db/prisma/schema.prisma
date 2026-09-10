@@ -1,0 +1,262 @@
+// Auditor Attest — database schema.
+// Money-related amounts are Decimal(18,6) (USDC has 6 decimals). Token counts are BigInt.
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum Tier {
+  quick    // free: tokei stats + language mix + which checklists/vectors would trigger, no LLM
+  standard // paid: service API key
+  byok     // user-supplied API key; pays only ATTEST_FEE_USDC
+}
+
+/// What the submitter asked for. The effective visibility is computed in code
+/// (packages/report `effectiveVisibility`), never trusted from this column alone.
+enum Visibility {
+  public
+  private
+}
+
+enum JobStatus {
+  quoting          // waiting for a worker to clone + run tokei
+  quote_running    // a worker has claimed the quote step
+  quoted           // quote ready, waiting for the submitter to choose tier/model/visibility
+  awaiting_payment // price locked, waiting for USDC transfer with memo = job id
+  queued           // paid (or admin-enqueued); waiting for a worker slot
+  running          // sandbox container is running
+  ingesting        // container finished, parsing report + attesting
+  done
+  failed
+  failed_budget    // aborted because the per-job cost cap was hit
+  cancelled
+  refunded
+}
+
+enum PaymentStatus {
+  pending    // waiting for a transfer
+  detected   // seen on-chain, not yet finalized
+  finalized  // finalized commitment, amount + memo matched
+  mismatched // memo matched but amount too low (manual review / refund)
+  refunded
+  expired
+}
+
+// ─── Users ───────────────────────────────────────────────────────────────────
+
+model User {
+  id           String   @id @default(cuid())
+  walletPubkey String?  @unique
+  githubId     String?  @unique
+  githubLogin  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  jobs          Job[]
+  verifications MaintainerVerification[]
+}
+
+/// Result of the GitHub OAuth repo-permission check (Phase 3). A row means this user
+/// held admin/maintain permission on owner/repo at verifiedAt.
+model MaintainerVerification {
+  id         String   @id @default(cuid())
+  userId     String
+  owner      String
+  repo       String
+  permission String   // admin | maintain | write
+  verifiedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, owner, repo])
+  @@index([owner, repo])
+}
+
+// ─── Jobs ────────────────────────────────────────────────────────────────────
+
+model Job {
+  id        String    @id @default(cuid())
+  repoUrl   String
+  owner     String
+  repo      String
+  /// Branch/tag/sha requested by the submitter. Null = default branch HEAD.
+  ref       String?
+  /// Resolved full 40-char commit SHA (set by the worker at quote time).
+  commitSha String?
+  tier      Tier      @default(quick)
+  model     String
+  visibility Visibility @default(private)
+  status    JobStatus @default(quoting)
+
+  submitterId       String?
+  submitterVerified Boolean @default(false)
+
+  /// Hard spend cap passed to the sandbox (USD). Derived from the quote.
+  budgetUsd Decimal? @db.Decimal(18, 6)
+  /// BYOK only: API key encrypted with BYOK_KEK. Wiped by the worker when it claims the job.
+  byokCiphertext String?
+
+  error       String?
+  containerId String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  startedAt   DateTime?
+  finishedAt  DateTime?
+
+  submitter User?      @relation(fields: [submitterId], references: [id])
+  quote     Quote?
+  payment   Payment?
+  report    Report?
+  events    JobEvent[]
+
+  @@index([status, createdAt])
+  @@index([owner, repo])
+}
+
+/// Append-only progress log for a job (shown on the quote/status page).
+model JobEvent {
+  id      String   @id @default(cuid())
+  jobId   String
+  at      DateTime @default(now())
+  level   String   @default("info") // info | warn | error
+  message String
+  data    Json?
+
+  job Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([jobId, at])
+}
+
+// ─── Quotes ──────────────────────────────────────────────────────────────────
+
+model Quote {
+  id    String @id @default(cuid())
+  jobId String @unique
+  model String
+
+  /// tokei totals
+  loc       Int   // code lines (excludes comments/blanks)
+  totalLoc  Int   // code + comments + blanks
+  files     Int
+  languages Json  // { "Rust": { code, comments, blanks, files }, ... }
+  markers   Json  // { anchor: bool, cargo: bool, package_json: bool, next: bool, python: bool, ai_agent: bool, ... }
+  scope     Json  // { checklists: ["01",...], vectorGroups: [...], vectorCount: n, itemCount: n }
+
+  estInputTokens  Int
+  estOutputTokens Int
+  estCostUsd      Decimal @db.Decimal(18, 6)
+  margin          Decimal @db.Decimal(8, 3)
+  calibration     Decimal @db.Decimal(8, 3)
+  priceUsdc       Decimal @db.Decimal(18, 6) // standard tier price
+  attestFeeUsdc   Decimal @db.Decimal(18, 6) // byok tier price
+  breakdown       Json    // full component breakdown shown to the user
+
+  createdAt DateTime @default(now())
+  expiresAt DateTime
+
+  job Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
+}
+
+// ─── Payments ────────────────────────────────────────────────────────────────
+
+model Payment {
+  id           String        @id @default(cuid())
+  jobId        String        @unique
+  /// Memo the payer must attach. Always equals the job id.
+  memo         String        @unique
+  expectedUsdc Decimal       @db.Decimal(18, 6)
+  receivedUsdc Decimal?      @db.Decimal(18, 6)
+  payer        String?
+  txSig        String?       @unique
+  slot         BigInt?
+  status       PaymentStatus @default(pending)
+  detectedAt   DateTime?
+  finalizedAt  DateTime?
+  refundTxSig  String?
+  refundedAt   DateTime?
+  expiresAt    DateTime
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  job Job @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@index([status, expiresAt])
+}
+
+// ─── Reports ─────────────────────────────────────────────────────────────────
+
+model Report {
+  id    String  @id @default(cuid())
+  /// Null for reports ingested manually via scripts/ingest-report.ts.
+  jobId String? @unique
+
+  owner         String
+  repo          String
+  commit        String // full 40-char sha
+  corpusVersion String
+  model         String
+  reportSha256  String
+  /// Path relative to REPORTS_DIR: <owner>/<repo>/<commit>
+  storagePath   String
+
+  critical Int @default(0)
+  high     Int @default(0)
+  medium   Int @default(0)
+  low      Int @default(0)
+  info     Int @default(0)
+  /// Highest internal severity found (1-10), null when no findings.
+  highestSeverity Int?
+  riskScore       Int?
+
+  /// Requested visibility. Effective visibility is computed in code.
+  visibility        Visibility
+  submitterVerified Boolean    @default(false)
+  /// public + unverified: Critical/High stay redacted until this date or maintainerAckAt.
+  redactUntil     DateTime?
+  maintainerAckAt DateTime?
+  /// Private reports are reachable only with this token in the URL.
+  accessToken String @unique @default(cuid())
+
+  startedAt  DateTime?
+  finishedAt DateTime?
+
+  inputTokens      BigInt  @default(0)
+  outputTokens     BigInt  @default(0)
+  cacheReadTokens  BigInt  @default(0)
+  cacheWriteTokens BigInt  @default(0)
+  costUsd          Decimal @default(0) @db.Decimal(18, 6)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  job         Job?         @relation(fields: [jobId], references: [id])
+  attestation Attestation?
+
+  @@unique([owner, repo, commit])
+  @@index([visibility, createdAt])
+  @@index([owner, repo])
+}
+
+// ─── Attestations ────────────────────────────────────────────────────────────
+
+model Attestation {
+  id        String   @id @default(cuid())
+  reportId  String   @unique
+  /// PDA of the (repo, commit) attestation account.
+  pda       String   @unique
+  txSig     String   @unique
+  attester  String
+  slot      BigInt?
+  programId String
+  createdAt DateTime @default(now())
+
+  report Report @relation(fields: [reportId], references: [id], onDelete: Cascade)
+}

@@ -1,0 +1,35 @@
+{
+  "name": "@auditor/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "lint": "next lint",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@auditor/db": "workspace:*",
+    "@auditor/pricing": "workspace:*",
+    "@auditor/report": "workspace:*",
+    "next": "16.3.4",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-markdown": "10.1.0",
+    "rehype-sanitize": "6.0.0",
+    "remark-gfm": "4.0.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "4.3.3",
+    "@types/node": "22.20.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "postcss": "8.5.28",
+    "tailwindcss": "4.3.3",
+    "typescript": "5.9.3",
+    "vitest": "5.0.0"
+  }
+}

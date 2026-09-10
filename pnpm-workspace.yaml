@@ -1,0 +1,8 @@
+packages:
+  - apps/*
+  - packages/*
+  - sandbox/runner
+  - sandbox/egress-proxy
+
+# The Anchor program (programs/audit_attest) is a Cargo workspace, not a pnpm package.
+# vendor/auditor-skill is a git submodule and is never built by pnpm.

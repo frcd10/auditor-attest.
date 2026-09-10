@@ -1,0 +1,13 @@
+{
+  "name": "@auditor/egress-proxy",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Allowlist-only HTTP CONNECT proxy. The only way out of a job container.",
+  "main": "./proxy.js",
+  "scripts": {
+    "build": "echo 'egress-proxy: nothing to build'",
+    "typecheck": "echo 'egress-proxy: plain JS'",
+    "test": "node --test proxy.test.js"
+  }
+}

@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Pre-commit guard: refuse to commit anything that looks like a secret,
+# and refuse any change inside the pinned corpus submodule.
+set -euo pipefail
+
+ROOT="$(git rev-parse --show-toplevel)"
+exec "$ROOT/scripts/check-secrets.sh" --staged

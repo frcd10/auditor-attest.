@@ -1,0 +1,17 @@
+{
+  "$comment": "Prompts sent to the auditor, in order, as separate user turns of one session. {{VARS}} are filled by apps/worker/src/prompts.ts. Slash commands resolve to the corpus's commands/*.md.",
+  "turns": [
+    {
+      "name": "intake",
+      "prompt": "/auditor:intake /target --auto"
+    },
+    {
+      "name": "audit-cycle",
+      "prompt": "/auditor:audit-cycle /target --scope {{SCOPE}}"
+    },
+    {
+      "name": "finalize",
+      "prompt": "Finalize. Confirm that /work/audit_1/REPORT.md exists, follows templates/audit-report.md, uses the full commit SHA {{COMMIT}}, and that the §1.1 Findings Summary by Severity counts equal the number of finding blocks per tier (recount them now and fix the table if they differ). If the report is missing, write it now from the artifacts you produced. Reply with only the absolute path of the final report."
+    }
+  ]
+}

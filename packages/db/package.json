@@ -1,0 +1,32 @@
+{
+  "name": "@auditor/db",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "generate": "prisma generate",
+    "migrate:dev": "dotenv -e ../../.env -- prisma migrate dev",
+    "migrate:deploy": "dotenv -e ../../.env -- prisma migrate deploy",
+    "migrate:diff": "prisma migrate diff --from-empty --to-schema-datamodel prisma/schema.prisma --script",
+    "studio": "dotenv -e ../../.env -- prisma studio",
+    "build": "prisma generate && tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "echo 'no tests in @auditor/db'"
+  },
+  "dependencies": {
+    "@prisma/client": "6.19.3"
+  },
+  "devDependencies": {
+    "dotenv-cli": "11.0.0",
+    "prisma": "6.19.3",
+    "typescript": "5.9.3"
+  }
+}

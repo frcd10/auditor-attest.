@@ -1,0 +1,48 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# builds
+dist/
+.next/
+out/
+*.tsbuildinfo
+target/
+.anchor/
+
+# env and secrets (never commit)
+.env
+.env.*
+!.env.example
+*.keypair.json
+*-keypair.json
+id.json
+id_*.json
+secrets/
+
+# local report store is data, not code (public reports are served from disk)
+reports/**
+!reports/.gitkeep
+!reports/README.md
+
+# worker scratch
+.jobs/
+tmp/
+
+# prisma
+packages/db/generated/
+
+# logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+*.swp
+
+# test artifacts
+coverage/
+test-ledger/

@@ -1,0 +1,3 @@
+[submodule "vendor/auditor-skill"]
+	path = vendor/auditor-skill
+	url = https://github.com/solanabr/auditor-skill

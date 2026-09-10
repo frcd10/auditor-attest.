@@ -1,0 +1,51 @@
+{
+  "name": "auditor-attest",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Paste a GitHub link, get a verifiable security audit attested on Solana mainnet.",
+  "packageManager": "pnpm@10.30.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "pnpm -r --filter './packages/**' --filter './apps/**' --filter './sandbox/**' run build",
+    "test": "pnpm -r --filter './packages/**' --filter './apps/**' --filter './sandbox/**' run test",
+    "typecheck": "pnpm -r run typecheck",
+    "lint": "pnpm -r run lint",
+    "dev:web": "pnpm --filter @auditor/web dev",
+    "dev:worker": "pnpm --filter @auditor/worker dev",
+    "db:up": "docker compose up -d postgres",
+    "db:down": "docker compose down",
+    "db:generate": "pnpm --filter @auditor/db generate",
+    "db:migrate": "pnpm --filter @auditor/db migrate:dev",
+    "db:deploy": "pnpm --filter @auditor/db migrate:deploy",
+    "sandbox:build": "docker build -t auditor-sandbox:latest -f sandbox/Dockerfile .",
+    "sandbox:proxy:build": "docker build -t auditor-egress-proxy:latest -f sandbox/egress-proxy/Dockerfile sandbox/egress-proxy",
+    "ingest": "tsx scripts/ingest-report.ts",
+    "refund": "tsx scripts/refund.ts",
+    "check:secrets": "bash scripts/check-secrets.sh",
+    "hooks:install": "git config core.hooksPath .githooks && echo 'git hooks installed (.githooks)'"
+  },
+  "devDependencies": {
+    "@auditor/attest": "workspace:*",
+    "@auditor/db": "workspace:*",
+    "@auditor/pricing": "workspace:*",
+    "@auditor/report": "workspace:*",
+    "@types/node": "22.20.2",
+    "dotenv": "17.4.2",
+    "tsx": "4.23.13",
+    "typescript": "5.9.3",
+    "vitest": "5.0.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/client",
+      "@prisma/engines",
+      "prisma",
+      "esbuild",
+      "bigint-buffer",
+      "bufferutil",
+      "utf-8-validate"
+    ]
+  }
+}

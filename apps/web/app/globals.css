@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #0b0d12;
+  --panel: #12151d;
+  --border: #232838;
+  --text: #e6e8ee;
+  --muted: #9aa3b5;
+  --accent: #7c9cff;
+  --critical: #ff4d5e;
+  --high: #ff9640;
+  --medium: #ffd23f;
+  --low: #4fb7ff;
+  --info: #a3a9b8;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+a {
+  color: var(--accent);
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+}
+
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+/* Minimal prose styles for rendered reports (no typography plugin). */
+.prose {
+  line-height: 1.65;
+  font-size: 0.95rem;
+}
+.prose h1 { font-size: 1.75rem; font-weight: 700; margin: 2rem 0 1rem; }
+.prose h2 { font-size: 1.4rem; font-weight: 700; margin: 2rem 0 0.75rem; border-bottom: 1px solid var(--border); padding-bottom: 0.25rem; }
+.prose h3 { font-size: 1.15rem; font-weight: 600; margin: 1.5rem 0 0.5rem; }
+.prose h4 { font-size: 1rem; font-weight: 600; margin: 1.25rem 0 0.5rem; }
+.prose p { margin: 0.6rem 0; }
+.prose ul, .prose ol { margin: 0.6rem 0 0.6rem 1.5rem; }
+.prose ul { list-style: disc; }
+.prose ol { list-style: decimal; }
+.prose li { margin: 0.2rem 0; }
+.prose code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.85em; background: #1b2030; padding: 0.1em 0.35em; border-radius: 0.3rem; }
+.prose pre { background: #0f1219; border: 1px solid var(--border); border-radius: 0.5rem; padding: 0.9rem; overflow-x: auto; margin: 0.75rem 0; }
+.prose pre code { background: transparent; padding: 0; }
+.prose blockquote { border-left: 3px solid var(--accent); padding-left: 0.9rem; color: var(--muted); margin: 0.75rem 0; }
+.prose table { border-collapse: collapse; width: 100%; margin: 0.75rem 0; font-size: 0.88rem; display: block; overflow-x: auto; }
+.prose th, .prose td { border: 1px solid var(--border); padding: 0.35rem 0.6rem; text-align: left; vertical-align: top; }
+.prose th { background: #171b26; }
+.prose hr { border: 0; border-top: 1px solid var(--border); margin: 1.5rem 0; }
+.prose img { max-width: 100%; }
