@@ -53,17 +53,15 @@ docs/                   phase notes, roadmap, upstream wishlist, self-audit
 
 ```bash
 git clone --recurse-submodules <this repo> && cd auditor-site
-pnpm install
 pnpm hooks:install                 # pre-commit secret scan + submodule guard
 cp .env.example .env               # fill in the values (see below)
-pnpm db:up                         # Postgres in Docker
-pnpm db:deploy                     # apply migrations
-pnpm build && pnpm test
-pnpm sandbox:proxy:build           # egress proxy image
-pnpm sandbox:build                 # job container image (installs the Agent SDK + Claude binary)
+bash scripts/dev-up.sh             # postgres, migrations, sandbox images, build, tests
 pnpm dev:worker                    # terminal 1
 pnpm dev:web                       # terminal 2 → http://localhost:3000
 ```
+
+Zero-cost checks: `pnpm exec tsx scripts/smoke-local.ts <github url> --keep` (quote a
+repo), `pnpm exec tsx scripts/sandbox-smoke.ts` (run the sandbox with a dummy key).
 
 Minimum `.env` for a local end-to-end run: `DATABASE_URL`, `ANTHROPIC_API_KEY` (standard
 tier), `ADMIN_TOKEN` (to enqueue without paying), `BYOK_KEK` (if you want the BYOK tier).

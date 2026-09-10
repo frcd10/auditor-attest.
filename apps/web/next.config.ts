@@ -6,6 +6,7 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..")
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  agentRules: false,
   outputFileTracingRoot: root,
   serverExternalPackages: ["@auditor/db", "@prisma/client", "prisma"],
   poweredByHeader: false,

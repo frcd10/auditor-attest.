@@ -45,13 +45,25 @@
 ## How to run
 
 ```bash
-pnpm db:up && pnpm db:deploy
-pnpm sandbox:proxy:build && pnpm sandbox:build
-pnpm dev:worker            # terminal 1
-pnpm dev:web               # terminal 2
-# paste https://github.com/deanmlittle/anchor-escrow-2024 on http://localhost:3000
-# choose Standard + model, then "Operator: run without payment" with ADMIN_TOKEN
+bash scripts/dev-up.sh     # postgres, migrations, sandbox images, build, tests
+pnpm dev:worker            # terminal 1 (sg docker -c 'pnpm dev:worker' before you re-login)
+pnpm dev:web               # terminal 2 → http://localhost:3000
+# paste a repo URL, choose a tier; Standard/BYOK then "Operator: run without payment" with ADMIN_TOKEN
 ```
+
+Local verification without spending anything:
+
+```bash
+pnpm exec tsx scripts/smoke-local.ts https://github.com/<owner>/<repo> --keep   # create + quote a job
+pnpm exec tsx scripts/sandbox-smoke.ts        # run the container with a dummy key
+pnpm ingest packages/report/fixtures/client-sample.md --repo https://github.com/example-org/example-vault \
+  --commit 0123456789abcdef0123456789abcdef01234567 --model claude-opus-5 --visibility public   # fixture report page
+```
+
+Verified on 2026-09-10: quote in 8 s for a 2K-LOC repo; sandbox loads the `auditor`
+plugin (16 commands), reaches `api.anthropic.com` only through the proxy, a bad key ends
+as `failed_no_report` with the 401 recorded and no key in any log; the fixture report
+renders with Critical/High redacted, lists on `/explore`, and the badge shows its counts.
 
 ## The first real run
 

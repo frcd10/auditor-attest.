@@ -32,6 +32,10 @@ tmp/
 # prisma
 packages/db/generated/
 
+# files `next dev` regenerates on every start
+apps/web/AGENTS.md
+apps/web/CLAUDE.md
+
 # logs
 *.log
 npm-debug.log*

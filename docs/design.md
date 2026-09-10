@@ -92,7 +92,11 @@ Ordered by how much it matters for a first real run.
 11. **Vercel deployment specifics** (not done): `outputFileTracingRoot` is set, but
     `serverExternalPackages` + a workspace Prisma client on Vercel needs a `postinstall`
     generate and the `reports/` store moved off disk.
-12. **Anchor program:** uses `init` + explicit `reattest` instead of `init_if_needed`
+12. **BYOK keys are not validated before launch.** The sandbox smoke test showed Claude
+    Code retries a `401` for about three minutes before giving up, so a bad user key burns
+    a container slot and a clone for nothing. Cheap fix: the web tier calls
+    `GET /v1/models` with the supplied key at submission time and rejects invalid keys.
+13. **Anchor program:** uses `init` + explicit `reattest` instead of `init_if_needed`
     (deliberate). No close instruction: attestations are permanent by design. Program
     upgrade authority stays with the deploy wallet; consider a multisig before public use.
 

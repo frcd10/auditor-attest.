@@ -248,8 +248,21 @@ async function main() {
           }
           break;
         }
-        default:
+        case "user":
+          // tool results flowing back to the model; too chatty to log
           break;
+        default: {
+          // Status, retry, auth, rate-limit, permission-denied and other lifecycle messages:
+          // log them compactly so a stalled run is diagnosable from the container log.
+          const m = msg as unknown as { type: string; subtype?: string; message?: unknown; error?: unknown; status?: unknown; reason?: unknown; rate_limit_info?: unknown };
+          const detail: Record<string, unknown> = { type: m.type };
+          if (m.subtype) detail.subtype = m.subtype;
+          for (const k of ["message", "error", "status", "reason", "rate_limit_info"] as const) {
+            if (m[k] !== undefined) detail[k] = typeof m[k] === "string" ? (m[k] as string).slice(0, 400) : m[k];
+          }
+          emit({ t: "sdk", ...detail });
+          break;
+        }
       }
     }
   } catch (err) {
