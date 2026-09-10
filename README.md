@@ -23,11 +23,18 @@ in `.env` to the model you used and `pnpm dev` publishes them all on the site (r
 commit come from the clone). Dry run without a database:
 `pnpm ingest:examples -- --dry-run`.
 
-**Re-run them on the current corpus** (spends on your `ANTHROPIC_API_KEY`, one job at a time, no
-payment step): `pnpm audit:batch -- --from-examples --model claude-opus-5 --scope program`
-queues every clone at the same commit as the hand-run report; add `--head` for the
-default-branch HEAD instead, `--dry-run` to preview, `--only kamino` to filter. Both audits
-of a commit stay visible on its report page.
+**Re-run one locally with your own Claude Code login** (no API key, single agent, current
+corpus 7.3.0): `pnpm audit:local -- Kamino/klend`. It pulls the newest default branch of the
+clone (hooks off, no submodules, detached checkout), runs `/auditor:audit --scope program`
+through the corpus plugin with Task/Agent disallowed and Bash limited to read-only
+inspection, writes `audit_N/REPORT.md` + `.attest.json`, and prints the counts. Add
+`--ingest` to publish it right away, `--scope full`, `--model <alias-or-id>` (default
+`fable`), `--no-pull`. Each run takes a while; run them one at a time.
+
+**Re-run all of them through the platform** (spends on `ANTHROPIC_API_KEY`, no payment step):
+`pnpm audit:batch -- --from-examples --model claude-opus-5 --scope program`; `--head` for
+the default-branch HEAD, `--dry-run`, `--only kamino`. Both audits of a commit stay visible
+on its report page.
 Secrets live in `.env` (gitignored). To run a real audit you need `ANTHROPIC_API_KEY`
 there; to enqueue without paying use the operator button on the job page with `ADMIN_TOKEN`.
 

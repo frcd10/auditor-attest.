@@ -64,10 +64,11 @@ export interface IngestOutput {
 
 /** Sum the SDK's per-model usage map into one usage record priced at our rates. */
 export function usageFromRunJson(run: unknown, fallbackModel: string): RunUsage {
-  const r = (run ?? {}) as { model_usage?: Record<string, Record<string, number>>; total_cost_usd?: number | null };
+  // Accepts the sandbox runner's run.json (model_usage) and the CLI's --output-format json (modelUsage).
+  const r = (run ?? {}) as { model_usage?: Record<string, Record<string, number>>; modelUsage?: Record<string, Record<string, number>>; total_cost_usd?: number | null };
   const cfg = loadModels();
   let input = 0, output = 0, cacheRead = 0, cacheWrite = 0, cost = 0;
-  for (const [modelKey, u] of Object.entries(r.model_usage ?? {})) {
+  for (const [modelKey, u] of Object.entries(r.model_usage ?? r.modelUsage ?? {})) {
     const i = u.inputTokens ?? u.input_tokens ?? 0;
     const o = u.outputTokens ?? u.output_tokens ?? 0;
     const cr = u.cacheReadInputTokens ?? u.cache_read_input_tokens ?? 0;

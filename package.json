@@ -24,6 +24,8 @@
     "sandbox:proxy:build": "docker build -t auditor-egress-proxy:latest -f sandbox/egress-proxy/Dockerfile sandbox/egress-proxy",
     "ingest": "tsx scripts/ingest-report.ts",
     "ingest:examples": "tsx scripts/ingest-examples.ts",
+    "examples:snapshot": "tsx scripts/examples-snapshot.ts",
+    "audit:local": "bash scripts/audit-local.sh",
     "audit:batch": "tsx scripts/audit-batch.ts",
     "refund": "tsx scripts/refund.ts",
     "check:secrets": "bash scripts/check-secrets.sh",
