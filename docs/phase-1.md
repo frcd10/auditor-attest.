@@ -55,9 +55,12 @@ pnpm dev:web               # terminal 2
 
 ## The first real run
 
-Target chosen: **https://github.com/deanmlittle/anchor-escrow-2024** at
+The operator picks the target repository (nothing is run against a repo they have not
+chosen). For an offline sanity check of the pricing formula only, the quote tool was run
+against **https://github.com/deanmlittle/anchor-escrow-2024** at
 `35d08ffd38fc4844dfbfd5609658f7aa955cafa3` — 282 lines of Rust (Anchor escrow with
-make/take/refund) + 138 lines of TypeScript tests, 500 code lines in total.
+make/take/refund) + 138 lines of TypeScript tests, 500 code lines in total. No LLM run
+happened.
 
 Offline quote (`scripts/quote-local.ts`), corpus 7.3.0@6bb2cbf:
 
