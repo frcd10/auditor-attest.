@@ -2,7 +2,7 @@
 
 import { timingSafeEqual } from "node:crypto";
 import { redirect } from "next/navigation";
-import { budgetFor, defaultModelId, enabledModels, envNumber, estimate, loadModels, type LanguageMix, type RepoMarkers } from "@auditor/pricing";
+import { AUDIT_SCOPES, budgetFor, defaultModelId, enabledModels, envNumber, estimate, loadModels, type AuditScope, type LanguageMix, type RepoMarkers } from "@auditor/pricing";
 import { parseGitHubUrl } from "@auditor/report";
 import { prisma } from "@/lib/db";
 import { adminToken, byokKek } from "@/lib/env";
@@ -30,10 +30,12 @@ export async function configureJob(formData: FormData): Promise<void> {
   const tier = String(formData.get("tier") ?? "");
   const model = String(formData.get("model") ?? "");
   const visibility = String(formData.get("visibility") ?? "private");
+  const scope = String(formData.get("scope") ?? "full") as AuditScope;
   const byokKey = String(formData.get("byokKey") ?? "").trim();
 
   if (!["quick", "standard", "byok"].includes(tier)) fail("invalid tier");
   if (!["public", "private"].includes(visibility)) fail("invalid visibility");
+  if (!AUDIT_SCOPES.includes(scope)) fail("invalid scope");
   const cfg = loadModels();
   if (!enabledModels(cfg).some((m) => m.id === model)) fail("invalid model");
 
@@ -44,7 +46,7 @@ export async function configureJob(formData: FormData): Promise<void> {
 
   if (tier === "quick") {
     await prisma.$transaction([
-      prisma.job.update({ where: { id: jobId }, data: { tier: "quick", model, visibility: visibility as "public" | "private", status: "done", finishedAt: new Date(), byokCiphertext: null } }),
+      prisma.job.update({ where: { id: jobId }, data: { tier: "quick", model, visibility: visibility as "public" | "private", scope, status: "done", finishedAt: new Date(), byokCiphertext: null } }),
       prisma.jobEvent.create({ data: { jobId, message: "quick tier selected: static scan complete, no LLM run" } }),
     ]);
     redirect(`/q/${jobId}`);
@@ -54,6 +56,7 @@ export async function configureJob(formData: FormData): Promise<void> {
     loc: job.quote.loc,
     languages: job.quote.languages as unknown as LanguageMix,
     markers: job.quote.markers as unknown as Partial<RepoMarkers>,
+    scope,
     model,
     models: cfg,
   });
@@ -69,9 +72,9 @@ export async function configureJob(formData: FormData): Promise<void> {
   await prisma.$transaction([
     prisma.job.update({
       where: { id: jobId },
-      data: { tier: tier as "standard" | "byok", model, visibility: visibility as "public" | "private", status: "awaiting_payment", budgetUsd: budgetFor(est), byokCiphertext },
+      data: { tier: tier as "standard" | "byok", model, visibility: visibility as "public" | "private", scope, status: "awaiting_payment", budgetUsd: budgetFor(est), byokCiphertext },
     }),
-    prisma.quote.update({ where: { jobId }, data: { model, estCostUsd: est.estCostUsd, estInputTokens: est.tokens.inputTotal, estOutputTokens: est.tokens.output, priceUsdc: est.priceUsdc, attestFeeUsdc: est.attestFeeUsdc } }),
+    prisma.quote.update({ where: { jobId }, data: { model, scope: est.scope as object, estCostUsd: est.estCostUsd, estInputTokens: est.tokens.inputTotal, estOutputTokens: est.tokens.output, priceUsdc: est.priceUsdc, attestFeeUsdc: est.attestFeeUsdc } }),
     prisma.payment.upsert({
       where: { jobId },
       create: { jobId, memo: jobId, expectedUsdc: price, expiresAt: new Date(Date.now() + ttlMin * 60_000) },

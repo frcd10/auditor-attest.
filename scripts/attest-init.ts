@@ -16,7 +16,7 @@ import { Connection, PublicKey, Transaction, sendAndConfirmTransaction } from "@
 import { buildInitializeIx, buildSetAttesterIx, deriveConfigPda, loadKeypair } from "@auditor/attest";
 import { findRepoRoot } from "@auditor/pricing";
 
-loadDotenv({ path: resolve(findRepoRoot(process.cwd()), ".env") });
+loadDotenv({ path: resolve(findRepoRoot(process.cwd()), ".env"), quiet: true });
 
 function arg(name: string): string | undefined {
   const i = process.argv.indexOf(`--${name}`);

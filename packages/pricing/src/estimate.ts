@@ -11,11 +11,31 @@ import {
 import { getModel, loadModels, type ModelPricing, type ModelsConfig } from "./models.js";
 import { detectScope, type LanguageMix, type RepoMarkers, type Scope } from "./scope.js";
 
+export type AuditScope = "full" | "program";
+export const AUDIT_SCOPES: readonly AuditScope[] = ["full", "program"];
+
+/** Languages that make up the on-chain program surface (corpus `--scope program`). */
+const PROGRAM_LANGUAGES = new Set(["Rust"]);
+
+/**
+ * Narrow the language mix to what the requested corpus scope reads. `program` keeps the
+ * on-chain code only (checklists 01-07 + the always-on set); `full` returns the input.
+ */
+export function applyScope(languages: LanguageMix, markers: Partial<RepoMarkers>, scope: AuditScope): { loc: number; languages: LanguageMix; markers: Partial<RepoMarkers> } {
+  if (scope === "full") return { loc: Object.values(languages).reduce((n, v) => n + v.code, 0), languages, markers };
+  const kept: LanguageMix = {};
+  for (const [lang, v] of Object.entries(languages)) if (PROGRAM_LANGUAGES.has(lang)) kept[lang] = v;
+  const loc = Object.values(kept).reduce((n, v) => n + v.code, 0);
+  return { loc, languages: kept, markers: { anchorToml: markers.anchorToml, cargoToml: markers.cargoToml, rustOffchain: false } };
+}
+
 export interface EstimateInput {
   /** Code lines (tokei `code`, after exclusions). */
   loc: number;
   languages: LanguageMix;
   markers?: Partial<RepoMarkers>;
+  /** Corpus scope. Default full. `program` narrows loc/languages to the on-chain code. */
+  scope?: AuditScope;
   model: string;
   /** Price = cost × margin. Default from MARGIN env (2.5). */
   margin?: number;
@@ -131,8 +151,10 @@ export function estimateTokens(loc: number, scope: Scope): TokenBreakdown {
 export function estimate(input: EstimateInput): Estimate {
   const cfg = input.models ?? loadModels();
   const model = getModel(input.model, cfg);
-  const scope = detectScope(input.languages, input.markers ?? {});
-  const tokens = estimateTokens(input.loc, scope);
+  const narrowed = applyScope(input.languages, input.markers ?? {}, input.scope ?? "full");
+  const loc = input.scope === "program" ? narrowed.loc : input.loc;
+  const scope = detectScope(narrowed.languages, narrowed.markers);
+  const tokens = estimateTokens(loc, scope);
   const rawCostUsd =
     (tokens.inputTotal * model.input_per_mtok + tokens.output * model.output_per_mtok) / 1_000_000;
   const calibration = input.calibration ?? envNumber("PRICING_CALIBRATION", 1.0);

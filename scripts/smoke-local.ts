@@ -13,7 +13,7 @@ import { prisma } from "@auditor/db";
 import { defaultModelId, findRepoRoot, loadModels } from "@auditor/pricing";
 import { parseGitHubUrl } from "@auditor/report";
 
-loadDotenv({ path: resolve(findRepoRoot(process.cwd()), ".env") });
+loadDotenv({ path: resolve(findRepoRoot(process.cwd()), ".env"), quiet: true });
 
 async function main() {
   const url = process.argv[2];

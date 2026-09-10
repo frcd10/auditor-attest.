@@ -4,8 +4,12 @@ import { effectiveVisibility, parseReport, redactReport, type EffectiveVisibilit
 import { prisma, type Attestation, type Report } from "./db";
 import { reportsDir } from "./env";
 
+export type ReportRow = Report & { attestation: Attestation | null };
+
 export interface LoadedReport {
-  row: Report & { attestation: Attestation | null };
+  row: ReportRow;
+  /** Every audit of this commit, newest first (the row is one of them). */
+  siblings: ReportRow[];
   meta: ReportMeta | null;
   visibility: EffectiveVisibility;
   parsed: ParsedReport;
@@ -14,18 +18,32 @@ export interface LoadedReport {
   redacted: boolean;
 }
 
-export async function findReport(owner: string, repo: string, sha: string): Promise<(Report & { attestation: Attestation | null }) | null> {
-  if (!/^[0-9a-f]{7,40}$/i.test(sha)) return null;
+/**
+ * All reports for owner/repo at a commit (full or ≥7-char prefix), newest first.
+ * `version` selects one by id; otherwise the newest is the primary.
+ */
+export async function findReports(owner: string, repo: string, sha: string): Promise<ReportRow[]> {
+  if (!/^[0-9a-f]{7,40}$/i.test(sha)) return [];
   const lower = sha.toLowerCase();
-  if (lower.length === 40) {
-    return prisma.report.findUnique({ where: { owner_repo_commit: { owner, repo, commit: lower } }, include: { attestation: true } });
-  }
-  const rows = await prisma.report.findMany({ where: { owner, repo, commit: { startsWith: lower } }, include: { attestation: true }, take: 2 });
-  return rows.length === 1 ? rows[0]! : null;
+  const rows = await prisma.report.findMany({
+    where: { owner, repo, commit: lower.length === 40 ? lower : { startsWith: lower } },
+    include: { attestation: true },
+    orderBy: { createdAt: "desc" },
+  });
+  // A short prefix must resolve to exactly one commit.
+  const commits = new Set(rows.map((r) => r.commit));
+  return commits.size === 1 ? rows : [];
+}
+
+export async function findReport(owner: string, repo: string, sha: string, version?: string): Promise<{ row: ReportRow; siblings: ReportRow[] } | null> {
+  const siblings = await findReports(owner, repo, sha);
+  if (siblings.length === 0) return null;
+  const row = (version && siblings.find((r) => r.id === version)) || siblings[0]!;
+  return { row, siblings };
 }
 
 /** Load + apply disclosure rules. Returns null if the file is missing on disk. */
-export function loadReport(row: Report & { attestation: Attestation | null }): LoadedReport | null {
+export function loadReport(row: ReportRow, siblings: ReportRow[] = [row]): LoadedReport | null {
   const dir = join(reportsDir(), row.storagePath);
   const mdPath = join(dir, "report.md");
   if (!existsSync(mdPath)) return null;
@@ -41,5 +59,5 @@ export function loadReport(row: Report & { attestation: Attestation | null }): L
   });
   const redacted = visibility === "public_redacted";
   const markdown = redacted ? redactReport(raw, parsed, { redactUntil: row.redactUntil }) : raw;
-  return { row, meta, visibility, parsed, markdown, redacted };
+  return { row, siblings, meta, visibility, parsed, markdown, redacted };
 }

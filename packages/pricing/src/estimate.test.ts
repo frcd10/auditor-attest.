@@ -110,6 +110,21 @@ describe("price", () => {
   });
 });
 
+describe("scope narrowing", () => {
+  it("program scope keeps only Rust and drops off-chain checklists", () => {
+    const languages = { Rust: { code: 1000, comments: 0, blanks: 0, files: 3 }, TypeScript: { code: 5000, comments: 0, blanks: 0, files: 20 }, JSON: { code: 9000, comments: 0, blanks: 0, files: 4 } };
+    const markers = { anchorToml: true, packageJson: true, web: true, backend: true, rustOffchain: true };
+    const full = estimate({ loc: 15000, languages, markers, model: "test-opus", margin: 2, attestFeeUsdc: 5, models, scope: "full" });
+    const prog = estimate({ loc: 15000, languages, markers, model: "test-opus", margin: 2, attestFeeUsdc: 5, models, scope: "program" });
+    expect(prog.tokens.codeReading).toBe(10_000);
+    expect(full.tokens.codeReading).toBe(150_000);
+    expect(prog.scope.checklists).not.toContain("08");
+    expect(prog.scope.checklists).not.toContain("20");
+    expect(full.scope.checklists).toContain("10");
+    expect(prog.estCostUsd).toBeLessThan(full.estCostUsd);
+  });
+});
+
 describe("tokei summarizer", () => {
   it("drops docs, lockfiles and vendored dirs", () => {
     const raw = {

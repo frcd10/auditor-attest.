@@ -17,7 +17,7 @@ import { prisma } from "@auditor/db";
 import { loadEnv } from "../apps/worker/src/env.js";
 import { ingestReport, usageFromRunJson, type RunUsage } from "../apps/worker/src/ingest.js";
 
-loadDotenv({ path: resolve(findRepoRoot(process.cwd()), ".env") });
+loadDotenv({ path: resolve(findRepoRoot(process.cwd()), ".env"), quiet: true });
 
 function arg(name: string): string | undefined {
   const i = process.argv.indexOf(`--${name}`);

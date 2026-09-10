@@ -18,7 +18,7 @@ import { loadKeypair, USDC_DECIMALS, USDC_MINT } from "@auditor/attest";
 import { findRepoRoot } from "@auditor/pricing";
 import { fromBaseUnits, toBaseUnits } from "../apps/worker/src/payments.js";
 
-loadDotenv({ path: resolve(findRepoRoot(process.cwd()), ".env") });
+loadDotenv({ path: resolve(findRepoRoot(process.cwd()), ".env"), quiet: true });
 const MEMO_PROGRAM = new PublicKey("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr");
 
 function arg(name: string): string | undefined {

@@ -34,6 +34,15 @@ export interface ReportMeta {
   tier?: "quick" | "standard" | "byok" | "manual";
 }
 
-export function storagePathFor(owner: string, repo: string, commit: string): string {
-  return `${owner}/${repo}/${commit}`;
+/** Filesystem-safe slug for a corpus version or model id ("7.3.0@6bb2cbf" → "7.3.0-6bb2cbf"). */
+export function pathSlug(s: string): string {
+  return s.replace(/[^A-Za-z0-9._-]+/g, "-").replace(/^-+|-+$/g, "") || "unknown";
+}
+
+/**
+ * reports/<owner>/<repo>/<commit>/<corpus>__<model>/ — one directory per audit of a commit,
+ * so a re-run with a newer corpus or another model never overwrites an earlier report.
+ */
+export function storagePathFor(owner: string, repo: string, commit: string, corpusVersion: string, model: string): string {
+  return `${owner}/${repo}/${commit}/${pathSlug(corpusVersion)}__${pathSlug(model)}`;
 }

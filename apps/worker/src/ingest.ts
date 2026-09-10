@@ -90,7 +90,7 @@ export function usageFromRunJson(run: unknown, fallbackModel: string): RunUsage 
 export async function ingestReport(env: WorkerEnv, input: IngestInput): Promise<IngestOutput> {
   const parsed = parseReport(input.reportMd.toString("utf8"));
   const reportSha256 = sha256Hex(input.reportMd);
-  const storagePath = storagePathFor(input.owner, input.repo, input.commit);
+  const storagePath = storagePathFor(input.owner, input.repo, input.commit, input.corpusVersion, input.model);
   const absDir = join(env.reportsDir, storagePath);
   mkdirSync(absDir, { recursive: true });
 
@@ -135,7 +135,9 @@ export async function ingestReport(env: WorkerEnv, input: IngestInput): Promise<
     cacheWriteTokens: BigInt(input.usage.cache_write_tokens),
     costUsd: input.usage.cost_usd,
   };
-  const existing = await prisma.report.findUnique({ where: { owner_repo_commit: { owner: input.owner, repo: input.repo, commit: input.commit } } });
+  const existing = await prisma.report.findUnique({
+    where: { owner_repo_commit_corpusVersion_model: { owner: input.owner, repo: input.repo, commit: input.commit, corpusVersion: input.corpusVersion, model: input.model } },
+  });
   const row = existing
     ? await prisma.report.update({ where: { id: existing.id }, data: { ...data, maintainerAckAt: existing.maintainerAckAt, redactUntil: existing.redactUntil ?? redactUntil } })
     : await prisma.report.create({ data });

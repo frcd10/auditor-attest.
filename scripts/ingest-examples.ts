@@ -17,7 +17,7 @@ import { config as loadDotenv } from "dotenv";
 import { findRepoRoot, getModel, loadModels } from "@auditor/pricing";
 import { parseGitHubUrl, parseReport } from "@auditor/report";
 
-loadDotenv({ path: resolve(findRepoRoot(process.cwd()), ".env") });
+loadDotenv({ path: resolve(findRepoRoot(process.cwd()), ".env"), quiet: true });
 
 function arg(name: string): string | undefined {
   const i = process.argv.indexOf(`--${name}`);

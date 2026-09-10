@@ -42,7 +42,7 @@ export default async function JobPage({ params, searchParams }: { params: Promis
   if (!job) notFound();
   const q = job.quote;
   const models = enabledModels(loadModels());
-  const breakdown = (q?.breakdown ?? {}) as { chosen?: TokenBreakdown; perModel?: PerModel; reasons?: string[]; excluded?: { language: string; code: number; files: number; reason: string }[] };
+  const breakdown = (q?.breakdown ?? {}) as { chosen?: TokenBreakdown; perModel?: PerModel; reasons?: string[]; auditScope?: string; excluded?: { language: string; code: number; files: number; reason: string }[] };
   const scope = (q?.scope ?? null) as Scope | null;
   const languages = (q?.languages ?? {}) as unknown as LanguageMix;
   const langRows = Object.entries(languages).sort((a, b) => b[1].code - a[1].code);
@@ -65,7 +65,7 @@ export default async function JobPage({ params, searchParams }: { params: Promis
             </h1>
             <p className="mono mt-2 text-sm text-[var(--muted)]">
               {job.ref ? `ref ${job.ref}` : "default branch"} · commit{" "}
-              {job.commitSha ? <a href={`${job.repoUrl}/commit/${job.commitSha}`} target="_blank" rel="noreferrer" className="text-white">{shortSha(job.commitSha)}</a> : "resolving…"} · {job.tier} · {job.visibility}
+              {job.commitSha ? <a href={`${job.repoUrl}/commit/${job.commitSha}`} target="_blank" rel="noreferrer" className="text-white">{shortSha(job.commitSha)}</a> : "resolving…"} · {job.tier} · {job.scope} scope · {job.visibility}
             </p>
           </div>
           <StatusPill status={job.status} />
@@ -256,6 +256,14 @@ export default async function JobPage({ params, searchParams }: { params: Promis
                         </option>
                       ))}
                     </select>
+                  </label>
+                  <label className="block">
+                    <span className="font-semibold">Scope</span>
+                    <select name="scope" defaultValue={job.scope} className="input input-sq mt-2 py-2 text-sm">
+                      <option value="full">Full repository (program + off-chain code)</option>
+                      <option value="program">On-chain program only (Rust; checklists 01-07 + always-on)</option>
+                    </select>
+                    <span className="mt-1 block text-xs text-[var(--dim)]">Program scope prices only the Rust lines and loads fewer checklists. The estimate above is for the {breakdown.auditScope ?? "full"} scope.</span>
                   </label>
                   <fieldset className="space-y-2">
                     <legend className="font-semibold">Disclosure</legend>

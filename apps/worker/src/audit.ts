@@ -45,7 +45,7 @@ export async function runAudit(env: WorkerEnv, job: Job, byokCiphertext: string 
     await makeReadOnly(repoDir);
 
     const proxyUrl = await ensureEgress(env);
-    const scope = "full";
+    const scope = job.scope === "program" ? "program" : "full";
     const vars = {
       CORPUS_VERSION: env.corpusVersion,
       OWNER: job.owner,

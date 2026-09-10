@@ -22,6 +22,12 @@ the corpus's `audit_1/REPORT.md` inside; the folder is gitignored). Set `EXAMPLE
 in `.env` to the model you used and `pnpm dev` publishes them all on the site (repo and
 commit come from the clone). Dry run without a database:
 `pnpm ingest:examples -- --dry-run`.
+
+**Re-run them on the current corpus** (spends on your `ANTHROPIC_API_KEY`, one job at a time, no
+payment step): `pnpm audit:batch -- --from-examples --model claude-opus-5 --scope program`
+queues every clone at the same commit as the hand-run report; add `--head` for the
+default-branch HEAD instead, `--dry-run` to preview, `--only kamino` to filter. Both audits
+of a commit stay visible on its report page.
 Secrets live in `.env` (gitignored). To run a real audit you need `ANTHROPIC_API_KEY`
 there; to enqueue without paying use the operator button on the job page with `ADMIN_TOKEN`.
 

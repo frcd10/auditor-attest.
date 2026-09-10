@@ -19,7 +19,7 @@ import { loadEnv } from "../apps/worker/src/env.js";
 import { ensureEgress, runSandbox } from "../apps/worker/src/docker.js";
 import { DISALLOWED_TOOLS, loadSystemAppend } from "../apps/worker/src/prompts.js";
 
-loadDotenv({ path: resolve(findRepoRoot(process.cwd()), ".env") });
+loadDotenv({ path: resolve(findRepoRoot(process.cwd()), ".env"), quiet: true });
 
 async function main() {
   const env = loadEnv();

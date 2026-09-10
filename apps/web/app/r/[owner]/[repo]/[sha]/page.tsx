@@ -11,19 +11,19 @@ export const dynamic = "force-dynamic";
 
 type Params = { owner: string; repo: string; sha: string };
 
-async function load(params: Params, token: string | undefined) {
-  const row = await findReport(params.owner, params.repo, params.sha);
-  if (!row) return null;
-  const loaded = loadReport(row);
+async function load(params: Params, token: string | undefined, version: string | undefined) {
+  const found = await findReport(params.owner, params.repo, params.sha, version);
+  if (!found) return null;
+  const loaded = loadReport(found.row, found.siblings);
   if (!loaded) return null;
-  if (loaded.visibility === "private" && token !== row.accessToken) return "private" as const;
+  if (loaded.visibility === "private" && token !== found.row.accessToken) return "private" as const;
   return loaded;
 }
 
-export async function generateMetadata({ params, searchParams }: { params: Promise<Params>; searchParams: Promise<{ t?: string }> }): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: { params: Promise<Params>; searchParams: Promise<{ t?: string; v?: string }> }): Promise<Metadata> {
   const p = await params;
-  const { t } = await searchParams;
-  const r = await load(p, t);
+  const { t, v } = await searchParams;
+  const r = await load(p, t, v);
   if (!r || r === "private") return { title: "Report", robots: { index: false } };
   const c = r.parsed.counts;
   return {
@@ -33,12 +33,13 @@ export async function generateMetadata({ params, searchParams }: { params: Promi
   };
 }
 
-export default async function ReportPage({ params, searchParams }: { params: Promise<Params>; searchParams: Promise<{ t?: string; verified?: string; verify_error?: string }> }) {
+export default async function ReportPage({ params, searchParams }: { params: Promise<Params>; searchParams: Promise<{ t?: string; v?: string; verified?: string; verify_error?: string }> }) {
   const p = await params;
-  const { t, verified, verify_error } = await searchParams;
-  const r = await load(p, t);
+  const { t, v, verified, verify_error } = await searchParams;
+  const r = await load(p, t, v);
   if (!r || r === "private") notFound();
-  const { row, parsed, markdown, redacted, visibility } = r;
+  const { row, siblings, parsed, markdown, redacted, visibility } = r;
+  const others = siblings.filter((s) => s.id !== row.id && s.visibility !== "private");
   const att = row.attestation;
   const readmeBadge = `[![audit](${siteUrl()}/badge/${row.owner}/${row.repo}.svg)](${siteUrl()}/r/${row.owner}/${row.repo})`;
 
@@ -56,6 +57,16 @@ export default async function ReportPage({ params, searchParams }: { params: Pro
         <div className="mt-6">
           <SeverityTiles counts={parsed.counts} />
         </div>
+        {others.length > 0 && (
+          <div className="mt-5 text-sm">
+            <span className="text-[var(--muted)]">Other audits of this commit: </span>
+            {others.map((s) => (
+              <a key={s.id} href={`?v=${s.id}`} className="mono mr-3 text-[var(--green)]">
+                {s.corpusVersion} · {s.model} · {when(s.finishedAt ?? s.createdAt)}
+              </a>
+            ))}
+          </div>
+        )}
       </section>
 
       {verified && <div className="rounded-2xl border border-[var(--green)] bg-[#0f2a1f] p-4 text-sm">{verified}</div>}
