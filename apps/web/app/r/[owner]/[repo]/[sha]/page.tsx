@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Markdown } from "@/components/Markdown";
 import { SeverityBadges } from "@/components/SeverityBadges";
-import { corpusVersion } from "@/lib/env";
+import { corpusVersion, siteUrl } from "@/lib/env";
 import { int, shortSha, usd, when } from "@/lib/format";
+import { githubConfigured } from "@/lib/github";
 import { findReport, loadReport } from "@/lib/reports";
 
 export const dynamic = "force-dynamic";
@@ -32,13 +33,14 @@ export async function generateMetadata({ params, searchParams }: { params: Promi
   };
 }
 
-export default async function ReportPage({ params, searchParams }: { params: Promise<Params>; searchParams: Promise<{ t?: string }> }) {
+export default async function ReportPage({ params, searchParams }: { params: Promise<Params>; searchParams: Promise<{ t?: string; verified?: string; verify_error?: string }> }) {
   const p = await params;
-  const { t } = await searchParams;
+  const { t, verified, verify_error } = await searchParams;
   const r = await load(p, t);
   if (!r || r === "private") notFound();
   const { row, parsed, markdown, redacted, visibility } = r;
   const att = row.attestation;
+  const readmeBadge = `[![audit](${siteUrl()}/badge/${row.owner}/${row.repo}.svg)](${siteUrl()}/r/${row.owner}/${row.repo})`;
 
   return (
     <div className="space-y-6">
@@ -78,10 +80,26 @@ export default async function ReportPage({ params, searchParams }: { params: Pro
             )}
           </dd>
         </dl>
+        {verified && <div className="rounded-md border border-[#3ddc97] bg-[#0f2a1f] p-3 text-sm">{verified}</div>}
+        {verify_error && <div className="rounded-md border border-[var(--high)] bg-[#2a1f12] p-3 text-sm">Acknowledgement failed: {verify_error}</div>}
         {redacted && (
           <div className="rounded-md border border-[var(--high)] bg-[#2a1f12] p-3 text-sm">
             Critical and High findings are withheld: the submitter is not a verified maintainer. They become visible when a maintainer acknowledges the report or on {row.redactUntil ? row.redactUntil.toISOString().slice(0, 10) : "the disclosure date"}. Severity counts above are exact and match the on-chain attestation.
+            {githubConfigured() && (
+              <>
+                {" "}
+                <a href={`/api/auth/github?report=${row.id}`} className="font-semibold">
+                  Maintainer? Acknowledge with GitHub →
+                </a>
+              </>
+            )}
           </div>
+        )}
+        {visibility !== "private" && (
+          <details className="text-xs text-[var(--muted)]">
+            <summary className="cursor-pointer">README badge</summary>
+            <pre className="mt-1 overflow-x-auto rounded-md border border-[var(--border)] p-2 mono">{readmeBadge}</pre>
+          </details>
         )}
         {parsed.warnings.length > 0 && (
           <details className="text-xs text-[var(--muted)]">

@@ -1,0 +1,19 @@
+# Anchor workspace for programs/audit_attest.
+# Mainnet only: there is no localnet/devnet entry. LiteSVM unit tests run with `cargo test`
+# and never touch a cluster.
+[toolchain]
+package_manager = "pnpm"
+
+[features]
+resolution = true
+skip-lint = false
+
+[programs.mainnet]
+audit_attest = "sXtvdoheTtFBukx8vCppJHhiiJHW2xa3xc5KaPAhzkC"
+
+[provider]
+cluster = "mainnet"
+wallet = "~/.config/solana/id_mainnet.json"
+
+[scripts]
+test = "cargo test -p audit_attest"

@@ -7,7 +7,7 @@ describe("attest encoding", () => {
     expect(repoHash("https://github.com/Owner/Repo")).toEqual(repoHash("https://github.com/owner/repo.git"));
     expect(() => canonicalRepoUrl("https://gitlab.com/a/b")).toThrow();
   });
-  it("encodes fixed-size args (122 bytes)", () => {
+  it("encodes fixed-size args (154 bytes)", () => {
     const bytes = encodeAttestArgs({
       repoUrl: "https://github.com/a/b",
       commitSha: "0123456789abcdef0123456789abcdef01234567",
@@ -17,11 +17,12 @@ describe("attest encoding", () => {
       counts: { critical: 1, high: 2, medium: 3, low: 4, info: 5 },
       visibility: 2,
     });
-    expect(bytes.length).toBe(20 + 32 + 32 + 32 + 5 + 1);
-    expect(Buffer.from(bytes.subarray(0, 4)).toString("hex")).toBe("01234567");
-    expect(Buffer.from(bytes.subarray(20, 20 + 13)).toString()).toBe("7.3.0@6bb2cbf");
-    expect([...bytes.subarray(116, 121)]).toEqual([1, 2, 3, 4, 5]);
-    expect(bytes[121]).toBe(2);
+    expect(bytes.length).toBe(32 + 20 + 32 + 32 + 32 + 5 + 1);
+    expect(bytes.subarray(0, 32)).toEqual(repoHash("https://github.com/a/b"));
+    expect(Buffer.from(bytes.subarray(32, 36)).toString("hex")).toBe("01234567");
+    expect(Buffer.from(bytes.subarray(52, 52 + 13)).toString()).toBe("7.3.0@6bb2cbf");
+    expect([...bytes.subarray(148, 153)]).toEqual([1, 2, 3, 4, 5]);
+    expect(bytes[153]).toBe(2);
   });
   it("rejects bad input", () => {
     expect(() => commitBytes("abc")).toThrow();

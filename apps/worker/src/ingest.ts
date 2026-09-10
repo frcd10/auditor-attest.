@@ -187,10 +187,11 @@ export async function ingestReport(env: WorkerEnv, input: IngestInput): Promise<
         counts: parsed.counts,
         visibility: visibility === "private" ? 0 : visibility === "public" ? 1 : 2,
       });
+      const onChainVisibility = visibility === "private" ? 0 : visibility === "public" ? 1 : 2;
       await prisma.attestation.upsert({
         where: { reportId: row.id },
-        create: { reportId: row.id, pda: res.pda, txSig: res.txSig, attester: res.attester, slot: res.slot !== null ? BigInt(res.slot) : null, programId: res.programId },
-        update: { pda: res.pda, txSig: res.txSig, attester: res.attester, slot: res.slot !== null ? BigInt(res.slot) : null, programId: res.programId },
+        create: { reportId: row.id, pda: res.pda, txSig: res.txSig, attester: res.attester, slot: res.slot !== null ? BigInt(res.slot) : null, programId: res.programId, onChainVisibility },
+        update: { pda: res.pda, txSig: res.txSig, attester: res.attester, slot: res.slot !== null ? BigInt(res.slot) : null, programId: res.programId, onChainVisibility },
       });
       meta.attestation = { tx: res.txSig, pda: res.pda, program_id: res.programId };
       writeFileSync(join(absDir, "meta.json"), JSON.stringify(meta, null, 2));

@@ -41,6 +41,19 @@ async function main() {
   else if (!(await imageExists(env.sandboxImage))) log("warn", `sandbox image ${env.sandboxImage} not built yet: run pnpm sandbox:build`);
   if (!env.serviceApiKey) log("warn", "ANTHROPIC_API_KEY not set: only byok jobs can run");
 
+  let watcher: { stop: () => void } | null = null;
+  if (env.rpcUrl && env.treasuryPubkey) {
+    const { startPaymentWatcher } = await import("./payments.js");
+    watcher = startPaymentWatcher({ rpcUrl: env.rpcUrl, treasuryPubkey: env.treasuryPubkey, usdcMint: env.usdcMint }, env.paymentPollMs);
+  } else {
+    log("warn", "RPC_URL / TREASURY_PUBKEY not set: payment watcher disabled (use the operator enqueue)");
+  }
+  let visSync: { stop: () => void } | null = null;
+  if (env.rpcUrl && env.attestProgramId && env.attesterKeypairPath) {
+    const { startVisibilitySync } = await import("./visibility-sync.js");
+    visSync = startVisibilitySync(env, env.visibilitySyncMs);
+  }
+
   while (!stopping) {
     try {
       const q = await claim("quoting", "quote_running");
@@ -62,6 +75,8 @@ async function main() {
     }
     await new Promise((res) => setTimeout(res, env.pollMs));
   }
+  watcher?.stop();
+  visSync?.stop();
   log("info", "worker stopped");
   await prisma.$disconnect();
 }

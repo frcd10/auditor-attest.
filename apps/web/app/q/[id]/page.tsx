@@ -2,9 +2,11 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CHECKLISTS, VECTOR_GROUPS, enabledModels, loadModels, type LanguageMix, type Scope, type TokenBreakdown } from "@auditor/pricing";
 import { prisma } from "@/lib/db";
-import { adminToken, treasuryPubkey, usdcMint } from "@/lib/env";
+import { adminToken, browserRpcUrl, treasuryPubkey, usdcMint } from "@/lib/env";
 import { int, shortSha, usd, usdc, when } from "@/lib/format";
+import { PayWithWallet } from "@/components/PayWithWallet";
 import { StatusPill } from "@/components/StatusPill";
+import { githubConfigured } from "@/lib/github";
 import { adminEnqueue, configureJob } from "../../actions";
 import { Poll } from "./Poll";
 
@@ -14,8 +16,9 @@ const LIVE = new Set(["quoting", "quote_running", "queued", "running", "ingestin
 
 type PerModel = Record<string, { estCostUsd: number; rawCostUsd: number; priceUsdc: number; attestFeeUsdc: number; tokens: TokenBreakdown }>;
 
-export default async function QuotePage({ params }: { params: Promise<{ id: string }> }) {
+export default async function QuotePage({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ verified?: string; verify_error?: string }> }) {
   const { id } = await params;
+  const { verified, verify_error } = await searchParams;
   const job = await prisma.job.findUnique({
     where: { id },
     include: { quote: true, payment: true, report: { include: { attestation: true } }, events: { orderBy: { at: "desc" }, take: 25 } },
@@ -48,6 +51,20 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
       </section>
 
       {job.error && <div className="rounded-md border border-[var(--critical)] bg-[#2a1216] p-3 text-sm">{job.error}</div>}
+      {verified && <div className="rounded-md border border-[#3ddc97] bg-[#0f2a1f] p-3 text-sm">{verified}</div>}
+      {verify_error && <div className="rounded-md border border-[var(--high)] bg-[#2a1f12] p-3 text-sm">Verification failed: {verify_error}</div>}
+
+      {githubConfigured() && !job.submitterVerified && (
+        <div className="panel flex flex-wrap items-center justify-between gap-3 p-4 text-sm">
+          <span>
+            Maintainer of <b>{job.owner}/{job.repo}</b>? Verify with GitHub (admin or maintain permission) to publish Critical/High findings immediately when you choose public disclosure.
+          </span>
+          <a href={`/api/auth/github?job=${job.id}`} className="rounded-md border border-[var(--accent)] px-3 py-1 text-[var(--accent)] no-underline">
+            Verify as maintainer
+          </a>
+        </div>
+      )}
+      {job.submitterVerified && <p className="text-xs text-[#3ddc97]">Submitter verified as a maintainer of {job.owner}/{job.repo}.</p>}
 
       {job.status === "done" && job.report && (
         <div className="panel p-4">
@@ -250,7 +267,16 @@ export default async function QuotePage({ params }: { params: Promise<{ id: stri
                 <dt className="text-[var(--muted)]">Expires</dt>
                 <dd>{when(job.payment.expiresAt)}</dd>
               </dl>
-              <p className="mt-2 text-xs text-[var(--muted)]">Wallet-connect payment lands in Phase 2. Until then, pay from any wallet that supports memos.</p>
+              {treasuryPubkey() && browserRpcUrl() ? (
+                <div className="mt-3">
+                  <PayWithWallet rpcUrl={browserRpcUrl()!} treasury={treasuryPubkey()!} usdcMint={usdcMint()} memo={job.id} amountUsdc={Number(job.payment.expectedUsdc).toFixed(6)} />
+                </div>
+              ) : (
+                <p className="mt-2 text-xs text-[var(--muted)]">Wallet payment is not configured on this deployment (NEXT_PUBLIC_RPC_URL / TREASURY_PUBKEY). Pay from any wallet that supports memos.</p>
+              )}
+              {job.payment.status === "mismatched" && (
+                <p className="mt-2 text-xs text-[var(--high)]">A transfer with this memo was received but the amount ({Number(job.payment.receivedUsdc).toFixed(2)} USDC) is below the price. The operator will refund it.</p>
+              )}
             </section>
           )}
 

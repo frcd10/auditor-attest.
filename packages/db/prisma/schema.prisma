@@ -256,6 +256,8 @@ model Attestation {
   attester  String
   slot      BigInt?
   programId String
+  /// Last visibility byte written on-chain (0 private, 1 public, 2 public_redacted).
+  onChainVisibility Int @default(0)
   createdAt DateTime @default(now())
 
   report Report @relation(fields: [reportId], references: [id], onDelete: Cascade)

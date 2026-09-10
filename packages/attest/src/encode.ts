@@ -43,12 +43,12 @@ export function u8(n: number, label: string): number {
 }
 
 /**
- * Instruction data for `attest` (after the Anchor discriminator):
- *   commit_sha[20] corpus_version[32] model_id[32] report_sha256[32] counts[5] visibility u8
- * The repo_hash is a PDA seed and the attester is a signer, so neither is in the args.
+ * Borsh-encoded `AttestArgs` (after the Anchor discriminator), matching programs/audit_attest:
+ *   repo_hash[32] commit_sha[20] corpus_version[32] model_id[32] report_sha256[32] counts[5] visibility u8
  */
 export function encodeAttestArgs(input: AttestationInput): Uint8Array {
   const parts = [
+    repoHash(input.repoUrl),
     commitBytes(input.commitSha),
     fixedString(input.corpusVersion, 32),
     fixedString(input.modelId, 32),

@@ -12,10 +12,12 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@auditor/attest": "workspace:*",
     "@auditor/db": "workspace:*",
     "@auditor/pricing": "workspace:*",
     "@auditor/report": "workspace:*",
-    "@auditor/attest": "workspace:*"
+    "@solana/spl-token": "0.4.15",
+    "@solana/web3.js": "1.99.0"
   },
   "devDependencies": {
     "@types/node": "22.20.2",

@@ -22,6 +22,10 @@ export interface WorkerEnv {
   attesterKeypairPath: string | null;
   rpcUrl: string | null;
   cluster: string;
+  treasuryPubkey: string | null;
+  usdcMint: string;
+  paymentPollMs: number;
+  visibilitySyncMs: number;
 }
 
 function num(name: string, fallback: number): number {
@@ -60,5 +64,9 @@ export function loadEnv(): WorkerEnv {
     attesterKeypairPath: process.env.ATTESTER_KEYPAIR_PATH?.length ? process.env.ATTESTER_KEYPAIR_PATH : null,
     rpcUrl: process.env.RPC_URL?.length ? process.env.RPC_URL : null,
     cluster,
+    treasuryPubkey: process.env.TREASURY_PUBKEY?.length ? process.env.TREASURY_PUBKEY : null,
+    usdcMint: process.env.USDC_MINT?.length ? process.env.USDC_MINT : "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    paymentPollMs: num("PAYMENT_POLL_MS", 15000),
+    visibilitySyncMs: num("VISIBILITY_SYNC_MS", 10 * 60 * 1000),
   };
 }

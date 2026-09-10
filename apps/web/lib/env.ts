@@ -33,6 +33,11 @@ export function treasuryPubkey(): string | null {
   return t && t.length ? t : null;
 }
 
+export function browserRpcUrl(): string | null {
+  const u = process.env.NEXT_PUBLIC_RPC_URL;
+  return u && u.length ? u : null;
+}
+
 export function usdcMint(): string {
   return process.env.NEXT_PUBLIC_USDC_MINT ?? "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
 }
