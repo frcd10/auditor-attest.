@@ -12,6 +12,7 @@
     "test": "pnpm -r --filter './packages/**' --filter './apps/**' --filter './sandbox/**' run test",
     "typecheck": "pnpm -r run typecheck",
     "lint": "pnpm -r run lint",
+    "dev": "bash scripts/dev.sh",
     "dev:web": "pnpm --filter @auditor/web dev",
     "dev:worker": "pnpm --filter @auditor/worker dev",
     "db:up": "docker compose up -d postgres",

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Markdown } from "@/components/Markdown";
-import { SeverityBadges } from "@/components/SeverityBadges";
+import { SeverityTiles } from "@/components/SeverityBadges";
 import { corpusVersion, siteUrl } from "@/lib/env";
 import { int, shortSha, usd, when } from "@/lib/format";
 import { githubConfigured } from "@/lib/github";
@@ -43,76 +43,87 @@ export default async function ReportPage({ params, searchParams }: { params: Pro
   const readmeBadge = `[![audit](${siteUrl()}/badge/${row.owner}/${row.repo}.svg)](${siteUrl()}/r/${row.owner}/${row.repo})`;
 
   return (
-    <div className="space-y-6">
-      <section className="space-y-3">
-        <h1 className="text-2xl font-bold">
-          <a href={`https://github.com/${row.owner}/${row.repo}`} target="_blank" rel="noreferrer" className="no-underline text-[var(--text)]">
-            {row.owner}/{row.repo}
-          </a>{" "}
-          <span className="mono text-base text-[var(--muted)]">
-            @ <a href={`https://github.com/${row.owner}/${row.repo}/commit/${row.commit}`} target="_blank" rel="noreferrer">{shortSha(row.commit)}</a>
-          </span>
+    <div className="container-x space-y-6 pt-12 pb-8">
+      {/* Header */}
+      <section className="card card-gradient p-6 sm:p-8">
+        <div className="text-xs uppercase tracking-wide text-[var(--muted)]">Security audit report</div>
+        <h1 className="h-section mt-1 text-3xl sm:text-4xl">
+          <a href={`https://github.com/${row.owner}/${row.repo}`} target="_blank" rel="noreferrer">{row.owner}/{row.repo}</a>
         </h1>
-        <SeverityBadges counts={parsed.counts} />
-        <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-xs mono">
-          <dt className="text-[var(--muted)]">Visibility</dt>
-          <dd>{visibility}{row.submitterVerified ? " · submitter verified as maintainer" : ""}</dd>
-          <dt className="text-[var(--muted)]">Corpus</dt>
-          <dd>auditor-skill {row.corpusVersion || corpusVersion()}</dd>
-          <dt className="text-[var(--muted)]">Model</dt>
-          <dd>{row.model}</dd>
-          <dt className="text-[var(--muted)]">Highest severity</dt>
-          <dd>{parsed.highestSeverity ?? "none"} / 10</dd>
-          <dt className="text-[var(--muted)]">Report sha256</dt>
-          <dd className="break-all">{row.reportSha256}</dd>
-          <dt className="text-[var(--muted)]">Finished</dt>
-          <dd>{when(row.finishedAt)}</dd>
-          <dt className="text-[var(--muted)]">Usage</dt>
-          <dd>{int(row.inputTokens)} in · {int(row.outputTokens)} out · {int(row.cacheReadTokens)} cache read · {usd(Number(row.costUsd), 2)}</dd>
-          <dt className="text-[var(--muted)]">Attestation</dt>
-          <dd>
-            {att ? (
-              <>
-                <a href={`https://explorer.solana.com/tx/${att.txSig}`} target="_blank" rel="noreferrer">tx {att.txSig.slice(0, 12)}…</a> · <a href={`https://explorer.solana.com/address/${att.pda}`} target="_blank" rel="noreferrer">account {att.pda.slice(0, 12)}…</a>
-              </>
-            ) : (
-              <span className="text-[var(--muted)]">not attested yet</span>
-            )}
-          </dd>
-        </dl>
-        {verified && <div className="rounded-md border border-[#3ddc97] bg-[#0f2a1f] p-3 text-sm">{verified}</div>}
-        {verify_error && <div className="rounded-md border border-[var(--high)] bg-[#2a1f12] p-3 text-sm">Acknowledgement failed: {verify_error}</div>}
-        {redacted && (
-          <div className="rounded-md border border-[var(--high)] bg-[#2a1f12] p-3 text-sm">
-            Critical and High findings are withheld: the submitter is not a verified maintainer. They become visible when a maintainer acknowledges the report or on {row.redactUntil ? row.redactUntil.toISOString().slice(0, 10) : "the disclosure date"}. Severity counts above are exact and match the on-chain attestation.
-            {githubConfigured() && (
-              <>
-                {" "}
-                <a href={`/api/auth/github?report=${row.id}`} className="font-semibold">
-                  Maintainer? Acknowledge with GitHub →
-                </a>
-              </>
-            )}
-          </div>
-        )}
-        {visibility !== "private" && (
-          <details className="text-xs text-[var(--muted)]">
-            <summary className="cursor-pointer">README badge</summary>
-            <pre className="mt-1 overflow-x-auto rounded-md border border-[var(--border)] p-2 mono">{readmeBadge}</pre>
-          </details>
-        )}
-        {parsed.warnings.length > 0 && (
-          <details className="text-xs text-[var(--muted)]">
-            <summary className="cursor-pointer">Parser notes ({parsed.warnings.length})</summary>
-            <ul className="mt-1 list-disc pl-5">
-              {parsed.warnings.map((w, i) => (
-                <li key={i}>{w}</li>
-              ))}
-            </ul>
-          </details>
-        )}
+        <p className="mono mt-2 text-sm text-[var(--muted)]">
+          commit <a href={`https://github.com/${row.owner}/${row.repo}/commit/${row.commit}`} target="_blank" rel="noreferrer" className="text-white">{shortSha(row.commit)}</a> · {row.model} · corpus {row.corpusVersion || corpusVersion()} · {when(row.finishedAt ?? row.createdAt)}
+        </p>
+        <div className="mt-6">
+          <SeverityTiles counts={parsed.counts} />
+        </div>
       </section>
-      <section className="panel p-5">
+
+      {verified && <div className="rounded-2xl border border-[var(--green)] bg-[#0f2a1f] p-4 text-sm">{verified}</div>}
+      {verify_error && <div className="rounded-2xl border border-[var(--high)] bg-[#2a1f12] p-4 text-sm">Acknowledgement failed: {verify_error}</div>}
+      {redacted && (
+        <div className="rounded-2xl border border-[var(--high)] bg-[#2a1f12] p-4 text-sm">
+          <b>Critical and High findings are withheld.</b> The submitter is not a verified maintainer. They become visible when a maintainer acknowledges this report or on {row.redactUntil ? row.redactUntil.toISOString().slice(0, 10) : "the disclosure date"}. The counts above are exact and match the on-chain attestation.
+          {githubConfigured() && (
+            <>
+              {" "}
+              <a href={`/api/auth/github?report=${row.id}`} className="font-semibold underline">Maintainer? Acknowledge with GitHub →</a>
+            </>
+          )}
+        </div>
+      )}
+
+      {/* Meta + attestation */}
+      <section className="grid gap-4 md:grid-cols-2">
+        <div className="card p-6">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">Provenance</h2>
+          <dl className="mono mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-xs">
+            <dt className="text-[var(--muted)]">Visibility</dt>
+            <dd>{visibility}{row.submitterVerified ? " · maintainer verified" : ""}</dd>
+            <dt className="text-[var(--muted)]">Highest severity</dt>
+            <dd>{parsed.highestSeverity ?? "none"} / 10</dd>
+            <dt className="text-[var(--muted)]">Report sha256</dt>
+            <dd className="break-all">{row.reportSha256}</dd>
+            <dt className="text-[var(--muted)]">Usage</dt>
+            <dd>{int(row.inputTokens)} in · {int(row.outputTokens)} out · {int(row.cacheReadTokens)} cached · {usd(Number(row.costUsd), 2)}</dd>
+          </dl>
+          {visibility !== "private" && (
+            <details className="mt-4 text-xs text-[var(--muted)]">
+              <summary className="cursor-pointer">README badge</summary>
+              <pre className="mono mt-2 overflow-x-auto rounded-xl border border-[var(--border)] bg-black/40 p-3">{readmeBadge}</pre>
+            </details>
+          )}
+        </div>
+        <div className="card p-6">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">On-chain attestation</h2>
+          {att ? (
+            <dl className="mono mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-xs">
+              <dt className="text-[var(--muted)]">Transaction</dt>
+              <dd className="break-all"><a href={`https://explorer.solana.com/tx/${att.txSig}`} target="_blank" rel="noreferrer" className="text-[var(--green)]">{att.txSig}</a></dd>
+              <dt className="text-[var(--muted)]">Account</dt>
+              <dd className="break-all"><a href={`https://explorer.solana.com/address/${att.pda}`} target="_blank" rel="noreferrer" className="text-[var(--green)]">{att.pda}</a></dd>
+              <dt className="text-[var(--muted)]">Attester</dt>
+              <dd className="break-all">{att.attester}</dd>
+              <dt className="text-[var(--muted)]">Program</dt>
+              <dd className="break-all">{att.programId}</dd>
+            </dl>
+          ) : (
+            <p className="mt-3 text-sm text-[var(--muted)]">Not attested yet. The attestation is written after ingest once the program is deployed; it will bind this report's hash, commit, corpus version, model and the counts above.</p>
+          )}
+          {parsed.warnings.length > 0 && (
+            <details className="mt-4 text-xs text-[var(--muted)]">
+              <summary className="cursor-pointer">Parser notes ({parsed.warnings.length})</summary>
+              <ul className="mt-1 list-disc pl-5">
+                {parsed.warnings.map((w, i) => (
+                  <li key={i}>{w}</li>
+                ))}
+              </ul>
+            </details>
+          )}
+        </div>
+      </section>
+
+      {/* Body */}
+      <section className="card p-6 sm:p-10">
         <Markdown source={markdown} />
       </section>
     </div>

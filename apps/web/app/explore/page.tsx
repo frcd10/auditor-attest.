@@ -8,7 +8,7 @@ import { shortSha, when } from "@/lib/format";
 export const dynamic = "force-dynamic";
 
 type Search = { q?: string; min?: string; model?: string; sort?: string; page?: string };
-const PAGE = 25;
+const PAGE = 24;
 
 export default async function ExplorePage({ searchParams }: { searchParams: Promise<Search> }) {
   const sp = await searchParams;
@@ -24,14 +24,16 @@ export default async function ExplorePage({ searchParams }: { searchParams: Prom
     ...(min ? { highestSeverity: { gte: min } } : {}),
     ...(model ? { model } : {}),
   };
-  const rows = await prisma.report.findMany({
-    where,
-    orderBy: sort === "severity" ? [{ highestSeverity: "desc" }, { createdAt: "desc" }] : [{ createdAt: "desc" }],
-    include: { attestation: true },
-    take: PAGE + 1,
-    skip: (page - 1) * PAGE,
-  });
-  // Private is excluded by the where clause; public and public_redacted are both listable.
+  const [rows, total] = await Promise.all([
+    prisma.report.findMany({
+      where,
+      orderBy: sort === "severity" ? [{ highestSeverity: "desc" }, { createdAt: "desc" }] : [{ createdAt: "desc" }],
+      include: { attestation: true },
+      take: PAGE + 1,
+      skip: (page - 1) * PAGE,
+    }),
+    prisma.report.count({ where }),
+  ]);
   const visible = rows.filter((r) => effectiveVisibility({ visibility: r.visibility, submitterVerified: r.submitterVerified, redactUntil: r.redactUntil, maintainerAckAt: r.maintainerAckAt }) !== "private");
   const hasNext = visible.length > PAGE;
   const list = visible.slice(0, PAGE);
@@ -44,26 +46,35 @@ export default async function ExplorePage({ searchParams }: { searchParams: Prom
   };
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Explore public audits</h1>
-      <form className="panel flex flex-wrap items-end gap-3 p-4 text-sm" method="get">
-        <label className="flex flex-col gap-1">
+    <div className="container-x space-y-8 pt-14 pb-8">
+      <div className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <h1 className="h-section text-4xl sm:text-5xl">Audits</h1>
+          <p className="mt-3 max-w-2xl text-[var(--muted)]">
+            Every public report, newest first. Private reports are never listed. A report marked <em>redacted</em> hides Critical and High details until the maintainer acknowledges it or 90 days pass; counts are always exact.
+          </p>
+        </div>
+        <div className="text-sm text-[var(--muted)]">{total} public report{total === 1 ? "" : "s"}</div>
+      </div>
+
+      <form className="card flex flex-wrap items-end gap-3 p-4 text-sm" method="get">
+        <label className="flex min-w-48 flex-1 flex-col gap-1">
           <span className="text-xs text-[var(--muted)]">Repository</span>
-          <input name="q" defaultValue={q} placeholder="owner or repo" className="rounded-md border border-[var(--border)] bg-[var(--bg)] px-2 py-1" />
+          <input name="q" defaultValue={q} placeholder="owner or repo" className="input input-sq py-2" />
         </label>
         <label className="flex flex-col gap-1">
-          <span className="text-xs text-[var(--muted)]">Min. highest severity</span>
-          <select name="min" defaultValue={String(min)} className="rounded-md border border-[var(--border)] bg-[var(--bg)] px-2 py-1">
+          <span className="text-xs text-[var(--muted)]">Min. severity</span>
+          <select name="min" defaultValue={String(min)} className="input input-sq py-2 pr-8">
             <option value="0">any</option>
-            <option value="9">Critical (9+)</option>
-            <option value="7">High (7+)</option>
-            <option value="5">Medium (5+)</option>
-            <option value="3">Low (3+)</option>
+            <option value="9">Critical</option>
+            <option value="7">High or worse</option>
+            <option value="5">Medium or worse</option>
+            <option value="3">Low or worse</option>
           </select>
         </label>
         <label className="flex flex-col gap-1">
           <span className="text-xs text-[var(--muted)]">Model</span>
-          <select name="model" defaultValue={model} className="rounded-md border border-[var(--border)] bg-[var(--bg)] px-2 py-1 mono text-xs">
+          <select name="model" defaultValue={model} className="input input-sq mono py-2 pr-8 text-xs">
             <option value="">any</option>
             {models.map((m) => (
               <option key={m.id} value={m.id}>
@@ -74,41 +85,43 @@ export default async function ExplorePage({ searchParams }: { searchParams: Prom
         </label>
         <label className="flex flex-col gap-1">
           <span className="text-xs text-[var(--muted)]">Sort</span>
-          <select name="sort" defaultValue={sort} className="rounded-md border border-[var(--border)] bg-[var(--bg)] px-2 py-1">
+          <select name="sort" defaultValue={sort} className="input input-sq py-2 pr-8">
             <option value="newest">newest</option>
             <option value="severity">highest severity</option>
           </select>
         </label>
-        <button type="submit" className="rounded-md bg-[var(--accent)] px-3 py-1 font-semibold text-black">
-          Filter
-        </button>
+        <button type="submit" className="btn btn-primary btn-sm">Filter</button>
+        {(q || min || model || sort !== "newest") && <Link href="/explore" className="btn btn-outline btn-sm">Reset</Link>}
       </form>
 
-      {list.length === 0 && <p className="text-sm text-[var(--muted)]">No public reports match.</p>}
-      <ul className="space-y-3">
+      {list.length === 0 && <div className="card p-10 text-center text-[var(--muted)]">No public reports match.</div>}
+      <ul className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {list.map((r) => {
           const vis = effectiveVisibility({ visibility: r.visibility, submitterVerified: r.submitterVerified, redactUntil: r.redactUntil, maintainerAckAt: r.maintainerAckAt });
           return (
-            <li key={r.id} className="panel p-4">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <Link href={`/r/${r.owner}/${r.repo}/${r.commit}`} className="font-semibold">
-                  {r.owner}/{r.repo} <span className="mono text-xs text-[var(--muted)]">@ {shortSha(r.commit)}</span>
-                </Link>
-                <span className="text-xs text-[var(--muted)] mono">
-                  {r.model} · {when(r.finishedAt ?? r.createdAt)} · {vis === "public_redacted" ? "Critical/High redacted" : "full disclosure"}
-                  {r.attestation ? " · attested ✓" : ""}
-                </span>
-              </div>
-              <div className="mt-2">
-                <SeverityBadges size="sm" counts={{ critical: r.critical, high: r.high, medium: r.medium, low: r.low, info: r.info }} />
-              </div>
+            <li key={r.id}>
+              <Link href={`/r/${r.owner}/${r.repo}/${r.commit}`} className="card block h-full p-5">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="truncate font-semibold">{r.owner}/{r.repo}</span>
+                  <span className="mono text-xs text-[var(--dim)]">{shortSha(r.commit)}</span>
+                </div>
+                <div className="mt-3">
+                  <SeverityBadges size="sm" counts={{ critical: r.critical, high: r.high, medium: r.medium, low: r.low, info: r.info }} />
+                </div>
+                <div className="mt-3 flex flex-wrap gap-x-3 text-xs text-[var(--dim)]">
+                  <span className="mono">{r.model}</span>
+                  <span>{when(r.finishedAt ?? r.createdAt)}</span>
+                  <span>{vis === "public_redacted" ? "redacted" : "full disclosure"}</span>
+                  {r.attestation && <span className="text-[var(--green)]">attested ✓</span>}
+                </div>
+              </Link>
             </li>
           );
         })}
       </ul>
       <div className="flex gap-3 text-sm">
-        {page > 1 && <Link href={qs({ page: String(page - 1) })}>← Previous</Link>}
-        {hasNext && <Link href={qs({ page: String(page + 1) })}>Next →</Link>}
+        {page > 1 && <Link href={qs({ page: String(page - 1) })} className="btn btn-outline btn-sm">← Previous</Link>}
+        {hasNext && <Link href={qs({ page: String(page + 1) })} className="btn btn-outline btn-sm">Next →</Link>}
       </div>
     </div>
   );

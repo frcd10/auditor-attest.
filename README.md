@@ -1,5 +1,19 @@
 # Auditor Attest
 
+## How I run it
+
+```bash
+cd ~/dev/auditor-site
+bash scripts/dev-up.sh        # first time or after pulling: Postgres, migrations, sandbox images, build, tests
+pnpm dev                      # worker + web in one terminal → http://localhost:3000
+```
+
+Stop: `Ctrl+C` (stops both), then `pnpm db:down` if you also want Postgres down (data is kept).
+Secrets live in `.env` (gitignored). To run a real audit you need `ANTHROPIC_API_KEY`
+there; to enqueue without paying use the operator button on the job page with `ADMIN_TOKEN`.
+
+---
+
 Paste a public GitHub link, get a price quote, pay in USDC on Solana mainnet, and an AI
 security audit runs against the repository using the open-source
 [auditor-skill](https://github.com/solanabr/auditor-skill) corpus. The result is a

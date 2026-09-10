@@ -1,3 +1,4 @@
+import { StatTile } from "@/components/StatTile";
 import { prisma } from "@/lib/db";
 import { int, usd } from "@/lib/format";
 
@@ -12,75 +13,69 @@ export default async function StatsPage() {
     prisma.job.groupBy({ by: ["status"], _count: { _all: true } }),
   ]);
   const s = agg._sum;
-  const tiles: [string, string][] = [
-    ["Repositories audited", int(repos.length)],
-    ["Reports", int(agg._count._all)],
-    ["Attested on mainnet", int(attested)],
-    ["Critical found", int(s.critical ?? 0)],
-    ["High found", int(s.high ?? 0)],
-    ["Medium found", int(s.medium ?? 0)],
-    ["Low found", int(s.low ?? 0)],
-    ["Informational", int(s.info ?? 0)],
-  ];
   return (
-    <div className="space-y-8">
-      <h1 className="text-2xl font-bold">Stats</h1>
-      <p className="text-sm text-[var(--muted)]">Severity totals include private reports (counts are never sensitive; finding text is). Public reports are listed under Explore.</p>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {tiles.map(([label, value]) => (
-          <div key={label} className="panel p-4">
-            <div className="text-xs text-[var(--muted)]">{label}</div>
-            <div className="mt-1 text-2xl font-semibold mono">{value}</div>
-          </div>
-        ))}
+    <div className="container-x space-y-10 pt-14 pb-8">
+      <div>
+        <h1 className="h-section text-4xl sm:text-5xl">Stats</h1>
+        <p className="mt-3 max-w-2xl text-[var(--muted)]">Totals across every audit, public and private. Counts are never sensitive; finding text is, and stays in the report.</p>
+      </div>
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        <StatTile label="Repositories audited" value={int(repos.length)} />
+        <StatTile label="Reports" value={int(agg._count._all)} />
+        <StatTile label="Attested on mainnet" value={int(attested)} />
+        <StatTile label="LLM spend" value={usd(s.costUsd ? Number(s.costUsd) : 0)} accent="plain" hint="at config/models.json rates" />
+      </div>
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
+        <StatTile label="Critical" value={int(s.critical ?? 0)} accent="critical" />
+        <StatTile label="High" value={int(s.high ?? 0)} accent="high" />
+        <StatTile label="Medium" value={int(s.medium ?? 0)} accent="medium" />
+        <StatTile label="Low" value={int(s.low ?? 0)} accent="low" />
+        <StatTile label="Informational" value={int(s.info ?? 0)} accent="plain" />
       </div>
       <section className="grid gap-4 md:grid-cols-2">
-        <div className="panel p-4">
-          <h2 className="font-semibold">By model</h2>
-          <table className="mt-2 w-full text-sm">
-            <thead className="text-left text-[var(--muted)]">
+        <div className="card p-6">
+          <h2 className="text-lg font-semibold">By model</h2>
+          <table className="table mt-3">
+            <thead>
               <tr>
-                <th className="py-1">Model</th>
-                <th className="py-1">Reports</th>
-                <th className="py-1">Avg cost</th>
+                <th>Model</th>
+                <th>Reports</th>
+                <th>Avg cost</th>
               </tr>
             </thead>
             <tbody>
               {byModel.map((m) => (
-                <tr key={m.model} className="border-t border-[var(--border)]">
-                  <td className="py-1 mono">{m.model}</td>
-                  <td className="py-1 mono">{m._count._all}</td>
-                  <td className="py-1 mono">{usd(m._avg.costUsd ? Number(m._avg.costUsd) : null)}</td>
+                <tr key={m.model}>
+                  <td className="mono">{m.model}</td>
+                  <td className="mono">{m._count._all}</td>
+                  <td className="mono">{usd(m._avg.costUsd ? Number(m._avg.costUsd) : null)}</td>
                 </tr>
               ))}
               {byModel.length === 0 && (
                 <tr>
-                  <td className="py-1 text-[var(--muted)]" colSpan={3}>
-                    No reports yet.
-                  </td>
+                  <td className="text-[var(--muted)]" colSpan={3}>No reports yet.</td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
-        <div className="panel p-4">
-          <h2 className="font-semibold">Spend and tokens</h2>
-          <dl className="mt-2 grid grid-cols-2 gap-y-1 text-sm">
-            <dt className="text-[var(--muted)]">LLM cost (all reports)</dt>
-            <dd className="mono">{usd(s.costUsd ? Number(s.costUsd) : 0)}</dd>
+        <div className="card p-6">
+          <h2 className="text-lg font-semibold">Tokens and jobs</h2>
+          <dl className="mt-3 grid grid-cols-2 gap-y-2 text-sm">
             <dt className="text-[var(--muted)]">Input tokens</dt>
-            <dd className="mono">{int(s.inputTokens ?? 0)}</dd>
+            <dd className="mono text-right">{int(s.inputTokens ?? 0)}</dd>
             <dt className="text-[var(--muted)]">Output tokens</dt>
-            <dd className="mono">{int(s.outputTokens ?? 0)}</dd>
+            <dd className="mono text-right">{int(s.outputTokens ?? 0)}</dd>
           </dl>
-          <h3 className="mt-4 text-xs font-semibold text-[var(--muted)]">Jobs by status</h3>
-          <ul className="mt-1 grid grid-cols-2 gap-x-4 text-xs mono">
+          <h3 className="mt-5 text-xs font-semibold uppercase tracking-wide text-[var(--muted)]">Jobs by status</h3>
+          <ul className="mt-2 grid grid-cols-2 gap-x-6 gap-y-1 text-sm">
             {jobs.map((j) => (
-              <li key={j.status} className="flex justify-between">
-                <span>{j.status}</span>
-                <span>{j._count._all}</span>
+              <li key={j.status} className="flex justify-between border-b border-[var(--border)] py-1">
+                <span className="text-[var(--muted)]">{j.status}</span>
+                <span className="mono">{j._count._all}</span>
               </li>
             ))}
+            {jobs.length === 0 && <li className="text-[var(--muted)]">No jobs yet.</li>}
           </ul>
         </div>
       </section>
