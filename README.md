@@ -4,11 +4,18 @@
 
 ```bash
 cd ~/dev/auditor-site
-bash scripts/dev-up.sh        # first time or after pulling: Postgres, migrations, sandbox images, build, tests
-pnpm dev                      # worker + web in one terminal → http://localhost:3000
+pnpm dev                      # → http://localhost:3000
 ```
 
-Stop: `Ctrl+C` (stops both), then `pnpm db:down` if you also want Postgres down (data is kept).
+That one command does everything: installs dependencies, inits the corpus submodule,
+creates `.env` with generated secrets if missing, starts Postgres, generates the Prisma
+client, applies migrations, builds the shared packages, builds the sandbox images if they
+are missing, then runs the worker and the web app together. Every step is a fast no-op
+when nothing changed. `Ctrl+C` stops worker and web; `pnpm db:down` also stops Postgres
+(data is kept).
+
+Options: `pnpm dev -- --rebuild-images` (after changing `sandbox/`), `pnpm dev -- --setup-only`.
+`bash scripts/dev-up.sh` = setup + full build + tests, without starting anything.
 Secrets live in `.env` (gitignored). To run a real audit you need `ANTHROPIC_API_KEY`
 there; to enqueue without paying use the operator button on the job page with `ADMIN_TOKEN`.
 
