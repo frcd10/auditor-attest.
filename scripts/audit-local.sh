@@ -10,9 +10,9 @@
 #   pnpm audit:local -- Kamino/klend --ingest             # publish on the site afterwards (needs Postgres)
 #
 # Safety: the target's git hooks are disabled, submodules are never initialised, the
-# checkout is a detached read of origin's default branch, the audit runs with --bare (no
-# repo settings/hooks), Task/Agent are disallowed (linear, never multi-agent), Bash is
-# limited to read-only inspection commands, and writes are allowed only inside audit_N/.
+# checkout is a detached read of origin's default branch, only user-level Claude settings
+# load (never the repo's .claude/), Task/Agent are disallowed (linear, never multi-agent),
+# Bash is limited to read-only inspection commands, and writes are allowed only inside audit_N/.
 # Nothing from the audited repository is ever built or executed.
 set -euo pipefail
 ROOT="$(git rev-parse --show-toplevel)"
@@ -120,9 +120,12 @@ EOF
 START="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 cd "$DIR"
 set +e
+# --setting-sources user: the audited repo's own .claude/settings.json (hooks, permissions)
+# is never loaded. The CLAUDE* vars are unset so this works from inside another session.
+env -u CLAUDECODE -u CLAUDE_CODE_ENTRYPOINT -u CLAUDE_CODE_MESSAGING_SOCKET -u CLAUDE_CODE_MESSAGING_TOKEN -u CLAUDE_CODE_CHILD_SESSION \
 "$CLI" -p "$PROMPT" \
   --model "$MODEL" ${EFFORT:+--effort "$EFFORT"} \
-  --bare --plugin-dir "$CORPUS" --add-dir "$CORPUS" \
+  --setting-sources user --plugin-dir "$CORPUS" --add-dir "$CORPUS" \
   --permission-mode dontAsk \
   --allowedTools "${ALLOWED[@]}" \
   --disallowedTools "${DISALLOWED[@]}" \
