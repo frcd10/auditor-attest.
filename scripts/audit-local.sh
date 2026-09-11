@@ -144,7 +144,10 @@ if [ ! -f "$DIR/$OUT/REPORT.md" ]; then
   echo "✗ no $OUT/REPORT.md produced (exit $STATUS)." >&2
   echo "  stderr: $(tail -c 400 "$DIR/$OUT/stderr.log" 2>/dev/null | tr '\n' ' ')" >&2
   echo "  result: $(head -c 300 "$DIR/$OUT/run.json" 2>/dev/null | tr '\n' ' ')" >&2
-  # Keep the numbering clean for the next attempt: drop the empty directory.
+  # Keep the evidence, then keep the numbering clean for the next attempt.
+  KEEP="$ROOT/audit-failures/$(echo "$TARGET" | tr '/' '_')-$(date -u +%Y%m%dT%H%M%SZ)"
+  mkdir -p "$KEEP" && cp "$DIR/$OUT"/run.json "$DIR/$OUT"/stderr.log "$KEEP"/ 2>/dev/null || true
+  echo "  evidence kept in $KEEP" >&2
   rm -rf "$DIR/$OUT"
   exit 1
 fi

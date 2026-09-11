@@ -53,3 +53,5 @@ test-ledger/
 
 # local clones + reports the operator produced by hand (ingested via scripts/ingest-report.ts)
 examples i runned local/
+audit-failures/
+audit-all.log
