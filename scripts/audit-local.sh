@@ -131,7 +131,7 @@ env -u CLAUDECODE -u CLAUDE_CODE_ENTRYPOINT -u CLAUDE_CODE_MESSAGING_SOCKET -u C
   --disallowedTools "${DISALLOWED[@]}" \
   --append-system-prompt "$SYSTEM" \
   --no-session-persistence \
-  --output-format json > "$OUT/run.json" 2> "$OUT/stderr.log"
+  --output-format json < /dev/null > "$OUT/run.json" 2> "$OUT/stderr.log"
 STATUS=$?
 set -e
 cd "$ROOT"
