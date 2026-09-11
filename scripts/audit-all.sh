@@ -38,7 +38,8 @@ echo "queue ($(wc -l < /tmp/audit-all.queue)):" | tee -a "$LOG"; cat /tmp/audit-
 ok=0; fail=0
 while IFS= read -r rel; do
   echo "=== $(date -u +%FT%TZ) start $rel" | tee -a "$LOG"
-  if bash scripts/audit-local.sh "$rel" --ingest "${EXTRA[@]}" >> "$LOG" 2>&1; then
+  # stdin from /dev/null: the loop's own stdin is the queue file and must not be consumed.
+  if bash scripts/audit-local.sh "$rel" --ingest "${EXTRA[@]}" < /dev/null >> "$LOG" 2>&1; then
     ok=$((ok+1)); echo "=== $(date -u +%FT%TZ) done  $rel" | tee -a "$LOG"
   else
     fail=$((fail+1)); echo "=== $(date -u +%FT%TZ) FAIL  $rel (see $LOG)" | tee -a "$LOG"

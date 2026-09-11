@@ -89,7 +89,8 @@ export function discover(root: string): { found: Example[]; skipped: { label: st
           const s = JSON.parse(readFileSync(sidecarPath, "utf8")) as { commit: string; corpus: string; model?: string; scope?: string; finished_at?: string };
           commit = s.commit;
           corpus = s.corpus;
-          model = s.model ?? null;
+          // Dated ids from the CLI (claude-haiku-4-5-20251001) → config/models.json ids.
+          model = s.model ? s.model.replace(/-\d{8}$/, "") : null;
           scope = s.scope === "full" ? "full" : "program";
           finishedAt = s.finished_at ? new Date(s.finished_at) : statSync(reportPath).mtime;
         } else {

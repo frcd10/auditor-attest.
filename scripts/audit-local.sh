@@ -64,7 +64,10 @@ if [ "$PULL" = 1 ]; then
     BRANCH="$(git -C "$DIR" remote show origin 2>/dev/null | sed -n 's/.*HEAD branch: //p' | head -1)"
   fi
   [ -n "$BRANCH" ] || { echo "could not determine origin's default branch" >&2; exit 1; }
-  git -C "$DIR" checkout -q --detach "origin/$BRANCH"
+  # -f: the clones may carry local edits to tracked files and untracked files that the
+  # newer commit now tracks; the upstream tree wins. Our artifacts (audit_N/, AUDITOR/)
+  # are untracked directories that upstream does not have, so they are left alone.
+  git -C "$DIR" checkout -q -f --detach "origin/$BRANCH"
 fi
 COMMIT="$(git -C "$DIR" rev-parse HEAD)"
 URL="$(git -C "$DIR" remote get-url origin)"
@@ -138,10 +141,16 @@ cd "$ROOT"
 END="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
 if [ ! -f "$DIR/$OUT/REPORT.md" ]; then
-  echo "✗ no $OUT/REPORT.md produced (exit $STATUS). See $DIR/$OUT/stderr.log and run.json" >&2
+  echo "✗ no $OUT/REPORT.md produced (exit $STATUS)." >&2
+  echo "  stderr: $(tail -c 400 "$DIR/$OUT/stderr.log" 2>/dev/null | tr '\n' ' ')" >&2
+  echo "  result: $(head -c 300 "$DIR/$OUT/run.json" 2>/dev/null | tr '\n' ' ')" >&2
+  # Keep the numbering clean for the next attempt: drop the empty directory.
+  rm -rf "$DIR/$OUT"
   exit 1
 fi
-MODEL_ID="$(node -e "try{const r=JSON.parse(require('fs').readFileSync(process.argv[1],'utf8'));const k=Object.keys(r.modelUsage||{});console.log(k[0]||'')}catch{console.log('')}" "$DIR/$OUT/run.json")"
+# The model that did the work = the modelUsage entry with the most output tokens (the CLI
+# also makes tiny helper calls on haiku). Dated ids are normalised to config/models.json ids.
+MODEL_ID="$(node -e "try{const r=JSON.parse(require('fs').readFileSync(process.argv[1],'utf8'));const e=Object.entries(r.modelUsage||{}).sort((a,b)=>(b[1].outputTokens||0)-(a[1].outputTokens||0));console.log(e.length?e[0][0].replace(/-\d{8}$/,''):'')}catch{console.log('')}" "$DIR/$OUT/run.json")"
 [ -n "$MODEL_ID" ] || MODEL_ID="$MODEL"
 cat > "$DIR/$OUT/.attest.json" <<EOF
 {
