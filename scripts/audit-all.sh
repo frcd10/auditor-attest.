@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Run scripts/audit-local.sh over every clone in "examples i runned local", one at a time,
+# Run scripts/audit-local.sh over clones in "examples i runned local", one at a time,
 # smallest program first, skipping clones already audited with the current corpus, and
 # publishing each result (--ingest). Log: audit-all.log in the repo root.
 #
@@ -8,9 +8,10 @@
 # the queue probes the CLI with a tiny prompt and waits, in 15-minute steps, until the
 # limit has reset. A repo is only counted as failed when the run actually did work.
 #
-#   pnpm audit:all                     # everything not yet audited with 7.3.0
-#   pnpm audit:all -- --only kamino    # substring filter
-#   pnpm audit:all -- --scope full
+#   pnpm audit:all                                   # everything not yet audited with 7.3.0
+#   pnpm audit:all -- --only kamino                  # substring filter
+#   pnpm audit:all -- --only "Serum/swap,Kamino/kfarms"   # exact list (comma-separated)
+#   pnpm audit:all -- --model opus --scope program   # anything else goes to audit-local.sh
 set -uo pipefail
 cd "$(git rev-parse --show-toplevel)"
 ONLY=""; EXTRA=()
@@ -26,6 +27,16 @@ MAX_WAIT_MIN="${MAX_WAIT_MIN:-720}"   # give up waiting for capacity after 12 h
 
 CLI="$(command -v claude || ls -1d "$HOME"/.vscode-server/extensions/anthropic.claude-code-*-linux-x64/resources/native-binary/claude 2>/dev/null | sort -V | tail -1)"
 log() { echo "$(date -u +%FT%TZ) $*" | tee -a "$LOG"; }
+
+selected() {  # $1 = Org/repo
+  [ -z "$ONLY" ] && return 0
+  if [[ "$ONLY" == *,* ]]; then
+    local x; IFS=',' read -ra x <<< "$ONLY"
+    for e in "${x[@]}"; do [ "$(echo "$e" | tr -d ' ')" = "$1" ] && return 0; done
+    return 1
+  fi
+  echo "$1" | grep -qi -- "$ONLY"
+}
 
 # 0 when the CLI answers a trivial prompt with real tokens; 1 when it returns nothing
 # (the signature of the session usage limit) or errors.
@@ -57,7 +68,7 @@ did_work() {
 list=()
 while IFS= read -r d; do
   rel="${d#examples i runned local/}"
-  [ -n "$ONLY" ] && ! echo "$rel" | grep -qi -- "$ONLY" && continue
+  selected "$rel" || continue
   if grep -rqs "\"corpus\": \"$CORPUS_VERSION\"" "$d"/audit_*/.attest.json 2>/dev/null; then
     log "skip $rel: already audited with $CORPUS_VERSION"; continue
   fi
@@ -67,7 +78,7 @@ done < <(find "examples i runned local" -mindepth 2 -maxdepth 2 -type d | while 
 
 [ ${#list[@]} -gt 0 ] || { log "nothing to do"; exit 0; }
 mapfile -t queue < <(printf '%s\n' "${list[@]}" | sort -n | cut -f2)
-log "queue (${#queue[@]}): ${queue[*]}"
+log "queue (${#queue[@]}): ${queue[*]}  options: ${EXTRA[*]:-none}"
 
 ok=0; fail=0
 for rel in "${queue[@]}"; do
