@@ -29,7 +29,9 @@ clone (hooks off, no submodules, detached checkout), runs `/auditor:audit --scop
 through the corpus plugin with Task/Agent disallowed and Bash limited to read-only
 inspection, writes `audit_N/REPORT.md` + `.attest.json`, and prints the counts. Add
 `--ingest` to publish it right away, `--scope full`, `--model <alias-or-id>` (default
-`fable`), `--no-pull`. Each run takes a while; run them one at a time.
+`fable`), `--no-pull`. Each run takes a while; run them one at a time. `pnpm audit:all`
+does exactly that for every clone not yet audited with the current corpus, smallest
+first, publishing each one (log in `audit-all.log`).
 
 **Re-run all of them through the platform** (spends on `ANTHROPIC_API_KEY`, no payment step):
 `pnpm audit:batch -- --from-examples --model claude-opus-5 --scope program`; `--head` for
