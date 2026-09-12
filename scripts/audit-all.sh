@@ -57,6 +57,15 @@ wait_for_capacity() {
   return 0
 }
 
+# Did the last failed run stop because the session usage limit was hit mid-audit?
+# (evidence dir written by audit-local.sh). Such a run must be retried, not counted failed,
+# however much work it had already done.
+hit_limit() {
+  local ev; ev="$(ls -td audit-failures/*/ 2>/dev/null | head -1)"
+  [ -n "$ev" ] && [ -f "$ev/run.json" ] || return 1
+  node -e 'const r=JSON.parse(require("fs").readFileSync(process.argv[1],"utf8"));process.exit(/session limit|usage limit|rate limit/i.test(String(r.result||""))?0:1)' "$ev/run.json" 2>/dev/null
+}
+
 # Did the last failed run do any work? (evidence dir written by audit-local.sh)
 did_work() {
   local ev; ev="$(ls -td audit-failures/*/ 2>/dev/null | head -1)"
@@ -89,6 +98,13 @@ for rel in "${queue[@]}"; do
     log "=== start $rel (attempt $attempt)"
     if bash scripts/audit-local.sh "$rel" --ingest "${EXTRA[@]}" < /dev/null >> "$LOG" 2>&1; then
       ok=$((ok+1)); log "=== done  $rel"; break
+    fi
+    if hit_limit; then
+      # The limit landed mid-audit. Retry from the top after it resets; no attempt cap,
+      # since nothing is wrong with the repo. wait_for_capacity does the actual waiting.
+      attempt=$((attempt-1))
+      log "=== $rel stopped on the session usage limit; retrying when it resets"
+      sleep 900; continue
     fi
     if did_work || [ "$attempt" -ge 3 ]; then
       fail=$((fail+1)); log "=== FAIL  $rel (see $LOG)"; break
