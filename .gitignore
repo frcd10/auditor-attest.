@@ -31,6 +31,7 @@ tmp/
 
 # prisma
 packages/db/generated/
+apps/web/generated/
 
 # files `next dev` regenerates on every start
 apps/web/AGENTS.md

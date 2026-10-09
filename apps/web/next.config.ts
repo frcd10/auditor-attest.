@@ -11,7 +11,7 @@ const nextConfig: NextConfig = {
   // Files read at request time through the filesystem (not imported), so the tracer
   // cannot see them: the model price list and the Prisma client + query engine.
   outputFileTracingIncludes: {
-    "/**": ["../../config/models.json", "../../pnpm-workspace.yaml", "../../packages/db/generated/**", "../../packages/db/dist/**"],
+    "/**": ["../../config/models.json", "../../pnpm-workspace.yaml", "../../packages/db/generated/**", "../../packages/db/dist/**", "generated/**"],
   },
   serverExternalPackages: ["@auditor/db", "@prisma/client", "prisma"],
   poweredByHeader: false,
