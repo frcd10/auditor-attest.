@@ -42,18 +42,18 @@ export default async function Home() {
   const programId = attestProgramId() ?? "sXtvdoheTtFBukx8vCppJHhiiJHW2xa3xc5KaPAhzkC";
 
   return (
-    <div className="space-y-16 pb-8">
+    <div className="space-y-10 pb-6">
       {/* Hero */}
-      <section className="container-x pt-14 pb-6 sm:pt-20">
-        <div className="grid gap-10 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start">
+      <section className="container-x pt-8 pb-2 sm:pt-12">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start">
           <div>
             <h1 className="h-display mt-2 text-4xl sm:text-5xl">
               Security audits for Solana programs, with a record on-chain.
             </h1>
-            <p className="mt-6 text-lg text-[var(--muted)]">
+            <p className="mt-4 text-lg text-[var(--muted)]">
               Auditor Dog runs the open-source <a href={CORPUS_URL} target="_blank" rel="noreferrer" className="text-white underline">auditor-skill</a> corpus by solanabr against a public GitHub repository: 20 checklists, 1,413 items and 136 known attack vectors, applied by a single model session with read-only tools. The report is published in full; its hash, the commit, the corpus version, the model and the severity counts are written to a Solana account anyone can read.
             </p>
-            <form id="start" action={createJob} className="mt-10 flex flex-col gap-3 sm:flex-row">
+            <form id="start" action={createJob} className="mt-4 flex flex-col gap-3 sm:flex-row">
               <input name="url" type="url" required placeholder="https://github.com/owner/repo" className="input mono flex-1 text-sm" />
               <button type="submit" className="btn btn-accent">Estimate the cost</button>
             </form>
@@ -82,21 +82,21 @@ export default async function Home() {
 
       {/* What you get */}
       <section id="how" className="container-x scroll-mt-24">
-        <h2 className="h-section text-3xl sm:text-4xl">What happens when you submit a repository</h2>
-        <div className="mt-8 grid gap-4 md:grid-cols-2">
+        <h2 className="h-section text-2xl sm:text-3xl">What happens when you submit a repository</h2>
+        <div className="mt-5 grid gap-4 md:grid-cols-2">
           {[
             ["Estimate", "The repository is sized through the GitHub API, without cloning. You see the expected model cost for each supported model before anything runs. The figure is an upper bound fitted on our own audits, with a 1.4× safety factor; the calibration data is in the repository."],
             ["Your key, your bill", "You create a dedicated key in an Anthropic workspace with a spend limit (the page tells you the number) and paste it. We verify it with one free API call, encrypt it, and wipe it the moment the run starts. The model usage is billed by Anthropic to you. We have no fees."],
             ["A disposable machine", "The audit runs on a fresh GitHub Actions runner in our public repository. It clones the exact commit, loads the corpus as a Claude Code plugin and walks it in one linear session: Read, Grep and read-only shell commands only, no subagents, nothing from the audited repository is ever built or executed. The run log is public."],
             ["Report and attestation", `The report is committed to our repository byte-for-byte and rendered here. The attester key writes one account per (repository, commit) on ${clusterLabel()}: repository hash, commit, corpus version, model, report sha256, severity counts and timestamp. The address derives from the URL and the commit, so no database is needed to find it.`],
           ].map(([title, body]) => (
-            <div key={title} className="card p-6">
+            <div key={title} className="card p-5">
               <div className="text-lg font-semibold">{title}</div>
               <p className="mt-2 text-sm text-[var(--muted)]">{body}</p>
             </div>
           ))}
         </div>
-        <p className="mt-6 max-w-3xl text-sm text-[var(--muted)]">
+        <p className="mt-4 max-w-3xl text-sm text-[var(--muted)]">
           This is a thorough first pass by a model, produced in 15 to 25 minutes. It is not a substitute for a human audit, and an attestation is a record that a given report was produced for a given commit, not a statement that the code is safe.
         </p>
       </section>
@@ -105,15 +105,15 @@ export default async function Home() {
       <section className="container-x">
         <div className="flex items-end justify-between gap-4">
           <div>
-            <h2 className="h-section text-3xl sm:text-4xl">Published reports</h2>
+            <h2 className="h-section text-2xl sm:text-3xl">Published reports</h2>
             <p className="mt-3 text-[var(--muted)]">Full text, Critical findings included. Private reports are never listed.</p>
           </div>
           <Link href="/explore" className="btn btn-outline btn-sm">All reports</Link>
         </div>
         {latest.length === 0 ? (
-          <div className="card mt-8 p-8 text-center text-[var(--muted)]">No public reports yet.</div>
+          <div className="card mt-5 p-8 text-center text-[var(--muted)]">No public reports yet.</div>
         ) : (
-          <ul className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <ul className="mt-5 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {latest.map((r) => (
               <li key={r.id}>
                 <Link href={`/r/${r.owner}/${r.repo}/${r.commit}`} className="card block p-5">
@@ -136,24 +136,24 @@ export default async function Home() {
 
       {/* Three ways */}
       <section id="ways" className="container-x scroll-mt-24">
-        <h2 className="h-section text-3xl sm:text-4xl">Run it where you prefer</h2>
+        <h2 className="h-section text-2xl sm:text-3xl">Run it where you prefer</h2>
         <p className="mt-3 max-w-2xl text-[var(--muted)]">
           Two repositories, both open source. The <b className="text-white">corpus</b> (<a href={CORPUS_URL} target="_blank" rel="noreferrer" className="underline">solanabr/auditor-skill</a>) is the audit itself: checklists, known vectors, prompts. This <b className="text-white">site</b> (<a href={repoUrl} target="_blank" rel="noreferrer" className="underline">{repo}</a>) is the runner, the attestation program and the report pages around it. To audit on your own machine you need only the corpus.
         </p>
-        <div className="mt-8 grid gap-4 md:grid-cols-3">
-          <div className="card p-6">
+        <div className="mt-5 grid gap-4 md:grid-cols-3">
+          <div className="card p-5">
             <div className="text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">Through this site</div>
             <p className="mt-3 text-sm text-[var(--muted)]">Estimate, key, run, report, attestation. Nothing to install. The report becomes public (or private, by link) and is attested on {clusterLabel()}.</p>
             <Link href="/#start" className="btn btn-outline btn-sm mt-4">Submit a repository</Link>
           </div>
-          <div className="card p-6">
+          <div className="card p-5">
             <div className="text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">Inside Claude Code (the corpus alone)</div>
             <p className="mt-3 text-sm text-[var(--muted)]">Clone solanabr/auditor-skill, load it as a Claude Code plugin in your own repository and run the audit locally, on your subscription or key. No upload, no third party, nothing of ours involved.</p>
             <pre className="mono mt-4 overflow-x-auto rounded-md border border-[var(--border)] bg-black/40 p-3 text-xs">{`git clone https://github.com/solanabr/auditor-skill
 claude --plugin-dir ./auditor-skill
 > /auditor:audit --scope program`}</pre>
           </div>
-          <div className="card p-6">
+          <div className="card p-5">
             <div className="text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">Self-host this site</div>
             <p className="mt-3 text-sm text-[var(--muted)]">Site, runner, attestation program and report pipeline in one repository, with the corpus as a pinned submodule. One command brings it up locally; the local runner audits any clone with your own Claude Code login.</p>
             <pre className="mono mt-4 overflow-x-auto rounded-md border border-[var(--border)] bg-black/40 p-3 text-xs">{`git clone --recurse-submodules ${repoUrl}
@@ -165,21 +165,21 @@ pnpm audit:local -- Org/repo`}</pre>
 
       {/* Cost */}
       <section id="pricing" className="container-x scroll-mt-24">
-        <h2 className="h-section text-3xl sm:text-4xl">Cost</h2>
-        <div className="mt-8 grid gap-4 md:grid-cols-3">
-          <div className="card p-6">
+        <h2 className="h-section text-2xl sm:text-3xl">Cost</h2>
+        <div className="mt-5 grid gap-4 md:grid-cols-3">
+          <div className="card p-5">
             <div className="text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">Estimate</div>
             <div className="mt-2 text-3xl font-bold">Free</div>
             <p className="mt-3 text-sm text-[var(--muted)]">Repository size, language mix, which checklists and known-vector groups apply, expected cost per model. No key needed.</p>
           </div>
-          <div className="card p-6">
+          <div className="card p-5">
             <div className="text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">Audit</div>
             <div className="mt-2 text-3xl font-bold">Your model usage</div>
             <p className="mt-3 text-sm text-[var(--muted)]">
               Billed by Anthropic to your key at list prices. Measured on eight on-chain programs with Claude Opus 5: $16 to $32 each. Models offered: {models.map((m) => m.label).join(", ")}.
             </p>
           </div>
-          <div className="card p-6">
+          <div className="card p-5">
             <div className="text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">Attestation</div>
             <div className="mt-2 text-3xl font-bold">Free today</div>
             <p className="mt-3 text-sm text-[var(--muted)]">Written by our attester key. No wallet or SOL on your side.</p>

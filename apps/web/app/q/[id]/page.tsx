@@ -52,7 +52,7 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
   const headroomPct = Math.round((LIMIT_HEADROOM - 1) * 100);
 
   return (
-    <div className="container-x space-y-8 pt-12 pb-8">
+    <div className="container-x space-y-5 pt-8 pb-6">
       <Poll active={LIVE.has(job.status)} />
       <RememberJob id={job.id} owner={job.owner} repo={job.repo} at={job.createdAt.getTime()} />
 
@@ -61,7 +61,7 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <div className="text-xs uppercase tracking-wide text-[var(--muted)]">Audit job</div>
-            <h1 className="h-section mt-1 text-3xl sm:text-4xl">
+            <h1 className="h-section mt-1 text-2xl sm:text-3xl">
               <a href={job.repoUrl} target="_blank" rel="noreferrer">{job.owner}/{job.repo}</a>
             </h1>
             <p className="mono mt-2 text-sm text-[var(--muted)]">
@@ -72,7 +72,7 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
           </div>
           <StatusPill status={job.status} />
         </div>
-        <div className="mt-6">
+        <div className="mt-4">
           <Stepper steps={steps(job.status, !!job.report)} />
         </div>
         {LIVE.has(job.status) && (
@@ -88,7 +88,7 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
 
       {/* Report ready */}
       {job.status === "done" && job.report && reportHref && (
-        <section className="card p-6">
+        <section className="card p-5">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <h2 className="text-lg font-semibold">Report ready</h2>
@@ -113,7 +113,7 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
       {q ? (
         <>
           <section className="grid gap-4 md:grid-cols-2">
-            <div className="card p-6">
+            <div className="card p-5">
               <h2 className="text-lg font-semibold">1 · Repository size</h2>
               <dl className="mt-3 grid grid-cols-2 gap-y-1 text-sm">
                 <dt className="text-[var(--muted)]">Rust (program) lines</dt>
@@ -144,7 +144,7 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
               )}
             </div>
 
-            <div className="card p-6">
+            <div className="card p-5">
               <h2 className="text-lg font-semibold">What the audit loads</h2>
               {scope && (
                 <>
@@ -175,7 +175,7 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
             </div>
           </section>
 
-          <section className="card p-6">
+          <section className="card p-5">
             <h2 className="text-lg font-semibold">Estimated cost on your key</h2>
             <p className="mt-1 text-xs text-[var(--muted)]">
               We charge nothing. The model is billed to your Anthropic account at list prices. The figures below are upper bounds for a normal run
@@ -215,7 +215,7 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
 
           {/* Step 2: key */}
           {canConfigure && (
-            <section className="card p-6">
+            <section className="card p-5">
               <h2 className="text-lg font-semibold">2 · Create a key for this audit only</h2>
               <p className="mt-1 text-sm text-[var(--muted)]">
                 Spend limits in the Anthropic Console are per <b>workspace</b>, not per key. So the safe way is a throwaway workspace with a hard limit, one key inside it, and both gone when the audit is over. Five minutes.
@@ -237,7 +237,7 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
                   <b>When the report is ready, delete the key</b> (and archive the workspace). A key that was used anywhere should never stay alive.
                 </li>
               </ol>
-              <form action={startAudit} className="mt-6 grid gap-6 md:grid-cols-2">
+              <form action={startAudit} className="mt-4 grid gap-6 md:grid-cols-2">
                 <input type="hidden" name="jobId" value={job.id} />
                 <div className="space-y-4 text-sm">
                   <label className="block">
@@ -296,7 +296,7 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
       )}
 
       {/* Activity */}
-      <section className="card p-6">
+      <section className="card p-5">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">Activity</h2>
         <ul className="mt-3 space-y-1 text-xs">
           {job.events.map((e) => (

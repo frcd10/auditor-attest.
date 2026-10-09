@@ -40,7 +40,7 @@ export function RecentJobs() {
   if (jobs.length === 0) return null;
   return (
     <section className="container-x">
-      <div className="card p-6">
+      <div className="card p-5">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold">Your audits</h2>
           <span className="text-xs text-[var(--dim)]">remembered in this browser</span>

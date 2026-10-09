@@ -44,17 +44,17 @@ export default async function ReportPage({ params, searchParams }: { params: Pro
   const sourceUrl = `${siteRepoUrl()}/blob/${siteBranch()}/reports/${row.storagePath}/report.md`;
 
   return (
-    <div className="container-x space-y-6 pt-12 pb-8">
+    <div className="container-x space-y-4 pt-8 pb-6">
       {/* Header */}
       <section className="card card-gradient p-6 sm:p-8">
         <div className="text-xs uppercase tracking-wide text-[var(--muted)]">Security audit report</div>
-        <h1 className="h-section mt-1 text-3xl sm:text-4xl">
+        <h1 className="h-section mt-1 text-2xl sm:text-3xl">
           <a href={`https://github.com/${row.owner}/${row.repo}`} target="_blank" rel="noreferrer">{row.owner}/{row.repo}</a>
         </h1>
         <p className="mono mt-2 text-sm text-[var(--muted)]">
           commit <a href={`https://github.com/${row.owner}/${row.repo}/commit/${row.commit}`} target="_blank" rel="noreferrer" className="text-white">{shortSha(row.commit)}</a> · {row.model} · corpus {row.corpusVersion || corpusVersion()} · {when(row.finishedAt ?? row.createdAt)}
         </p>
-        <div className="mt-6">
+        <div className="mt-4">
           <SeverityTiles counts={parsed.counts} />
         </div>
         {others.length > 0 && (
@@ -77,7 +77,7 @@ export default async function ReportPage({ params, searchParams }: { params: Pro
 
       {/* Meta + attestation */}
       <section className="grid gap-4 md:grid-cols-2">
-        <div className="card p-6">
+        <div className="card p-5">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">Provenance</h2>
           <dl className="mono mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-xs">
             <dt className="text-[var(--muted)]">Visibility</dt>
@@ -102,7 +102,7 @@ export default async function ReportPage({ params, searchParams }: { params: Pro
             </details>
           )}
         </div>
-        <div className="card p-6">
+        <div className="card p-5">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">On-chain attestation · {clusterLabel()}</h2>
           {att ? (
             <dl className="mono mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-xs">
@@ -133,7 +133,7 @@ export default async function ReportPage({ params, searchParams }: { params: Pro
       </section>
 
       {/* Body */}
-      <section className="card p-6 sm:p-10">
+      <section className="card p-5 sm:p-8">
         <Markdown source={markdown} />
       </section>
     </div>

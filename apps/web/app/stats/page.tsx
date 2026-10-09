@@ -15,9 +15,9 @@ export default async function StatsPage() {
   ]);
   const s = agg._sum;
   return (
-    <div className="container-x space-y-10 pt-14 pb-8">
+    <div className="container-x space-y-6 pt-8 pb-6">
       <div>
-        <h1 className="h-section text-4xl sm:text-5xl">Stats</h1>
+        <h1 className="h-section text-3xl">Stats</h1>
         <p className="mt-3 max-w-2xl text-[var(--muted)]">Totals across every audit, public and private. Counts are never sensitive; finding text is, and stays in the report.</p>
       </div>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
@@ -34,7 +34,7 @@ export default async function StatsPage() {
         <StatTile label="Informational" value={int(s.info ?? 0)} accent="plain" />
       </div>
       <section className="grid gap-4 md:grid-cols-2">
-        <div className="card p-6">
+        <div className="card p-5">
           <h2 className="text-lg font-semibold">By model</h2>
           <table className="table mt-3">
             <thead>
@@ -60,7 +60,7 @@ export default async function StatsPage() {
             </tbody>
           </table>
         </div>
-        <div className="card p-6">
+        <div className="card p-5">
           <h2 className="text-lg font-semibold">Tokens and jobs</h2>
           <dl className="mt-3 grid grid-cols-2 gap-y-2 text-sm">
             <dt className="text-[var(--muted)]">Input tokens</dt>

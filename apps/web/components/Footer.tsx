@@ -4,8 +4,8 @@ import { Logo } from "./Nav";
 
 export function Footer() {
   return (
-    <footer className="mt-24 border-t border-[var(--border)]">
-      <div className="container-x grid gap-10 py-14 md:grid-cols-4">
+    <footer className="mt-12 border-t border-[var(--border)]">
+      <div className="container-x grid gap-10 py-8 md:grid-cols-4">
         <div className="space-y-3 md:col-span-2">
           <Logo />
           <p className="max-w-md text-sm text-[var(--muted)]">
@@ -31,7 +31,7 @@ export function Footer() {
           </ul>
         </div>
       </div>
-      <div className="container-x flex flex-wrap items-center justify-between gap-2 border-t border-[var(--border)] py-6 text-xs text-[var(--dim)]">
+      <div className="container-x flex flex-wrap items-center justify-between gap-2 border-t border-[var(--border)] py-4 text-xs text-[var(--dim)]">
         <span>Auditor Dog · corpus {corpusVersion()} · {clusterLabel()}</span>
         <span>MIT licensed</span>
       </div>

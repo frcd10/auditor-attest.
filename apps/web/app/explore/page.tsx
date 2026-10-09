@@ -46,10 +46,10 @@ export default async function ExplorePage({ searchParams }: { searchParams: Prom
   };
 
   return (
-    <div className="container-x space-y-8 pt-14 pb-8">
+    <div className="container-x space-y-5 pt-8 pb-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="h-section text-4xl sm:text-5xl">Reports</h1>
+          <h1 className="h-section text-3xl">Reports</h1>
           <p className="mt-3 max-w-2xl text-[var(--muted)]">
             Every public report, newest first, with full finding text. Private reports are never listed. Severity counts match the on-chain attestation.
           </p>
