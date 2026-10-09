@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "dotenv -e ../../.env -- next dev",
-    "build": "next build",
+    "build": "pnpm -w run build:packages && next build",
     "start": "dotenv -e ../../.env -- next start",
     "typecheck": "tsc --noEmit",
     "lint": "next lint",

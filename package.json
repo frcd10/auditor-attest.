@@ -31,11 +31,12 @@
     "refund": "tsx scripts/refund.ts",
     "check:secrets": "bash scripts/check-secrets.sh",
     "hooks:install": "git config core.hooksPath .githooks && echo 'git hooks installed (.githooks)'",
-    "build:web": "pnpm -r --filter './packages/**' build && pnpm --filter @auditor/web build",
+    "build:web": "pnpm run build:packages && pnpm --filter @auditor/web build",
     "unpublish": "tsx scripts/unpublish.ts",
     "check:freshness": "tsx scripts/check-freshness.ts",
     "ci:audit": "tsx scripts/ci-audit.ts",
-    "db:deploy:prod": "dotenv -e .env -v DATABASE_URL=\"$PROD_DATABASE_URL\" -- pnpm --filter @auditor/db exec prisma migrate deploy"
+    "db:deploy:prod": "dotenv -e .env -v DATABASE_URL=\"$PROD_DATABASE_URL\" -- pnpm --filter @auditor/db exec prisma migrate deploy",
+    "build:packages": "pnpm -r --filter './packages/**' build"
   },
   "devDependencies": {
     "@auditor/attest": "workspace:*",
