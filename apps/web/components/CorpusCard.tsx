@@ -7,7 +7,6 @@ interface RepoInfo {
   description: string | null;
   stargazers_count: number;
   forks_count: number;
-  homepage: string | null;
   license: { spdx_id: string } | null;
   topics?: string[];
 }
@@ -57,11 +56,6 @@ export async function CorpusCard() {
       )}
       <div className="mt-4 flex flex-wrap gap-2">
         <a href={CORPUS_URL} target="_blank" rel="noreferrer" className="btn btn-outline btn-sm">Clone it to run it yourself</a>
-        {info?.homepage && (
-          <a href={info.homepage.startsWith("http") ? info.homepage : `https://${info.homepage}`} target="_blank" rel="noreferrer" className="btn btn-outline btn-sm">
-            {info.homepage.replace(/^https?:\/\//, "")}
-          </a>
-        )}
       </div>
     </aside>
   );
