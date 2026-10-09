@@ -194,6 +194,9 @@ pnpm audit:local -- Org/repo`}</pre>
             <div className="text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">Attestation</div>
             <div className="mt-2 text-4xl font-bold">Free</div>
             <p className="mt-3 text-sm text-[var(--muted)]">Written on {clusterLabel()} by our attester key. You do not need a wallet, SOL or anything on-chain. The account address is derived from the repository URL and the commit, so anyone can find it without us.</p>
+            <p className="mt-3 text-sm text-[var(--dim)]">
+              <b className="text-[var(--muted)]">Later:</b> attestations will be the one thing we charge for. The goal is that a repository audited once gets a fresh attestation on every new commit, with a delta audit of what changed since the last attested commit.
+            </p>
           </div>
         </div>
         <p className="mt-4 text-xs text-[var(--dim)]">Model list and prices are maintained in config/models.json in the repository. A rigorous first pass, not a substitute for a human audit and never a &quot;safe to deploy&quot; stamp.</p>
