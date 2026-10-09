@@ -8,6 +8,7 @@ import { prisma } from "@/lib/db";
 import { actionsUrl } from "@/lib/dispatch";
 import { clusterLabel, siteRepoUrl } from "@/lib/env";
 import { int, shortSha, usd, when } from "@/lib/format";
+import { siteUrl } from "@/lib/env";
 import { startAudit } from "../../actions";
 import { Poll } from "./Poll";
 
@@ -83,6 +84,10 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
         )}
       </section>
 
+      <div className="card p-4 text-sm text-[var(--muted)]">
+        There is no login. This page&apos;s address is your only way back to this audit; keep it. Audits you start in this browser are also listed on the home page, locally, until you clear site data.
+      </div>
+
       {job.error && <div className="rounded-md border border-[var(--critical)] bg-[#2a1216] p-4 text-sm">{job.error}</div>}
       {breakdown.archived && <div className="rounded-md border border-[var(--high)] bg-[#2a1f12] p-4 text-sm">This repository is archived on GitHub. You can still audit it, but nobody is maintaining it.</div>}
 
@@ -98,6 +103,12 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
                 {job.report.visibility === "private" ? " · private link, keep the token" : ""}
               </p>
               <p className="mt-2 text-xs text-[var(--high)]">Now delete the API key you used for this audit in the Anthropic Console. It has done its job.</p>
+              {job.report.visibility === "private" && (
+                <div className="mt-3">
+                  <div className="text-xs text-[var(--muted)]">Private report link. The token in it is the only key to this report; it is not listed anywhere and cannot be recovered.</div>
+                  <input readOnly value={`${siteUrl()}${reportHref}`} className="input input-sq mono mt-1 py-1.5 text-xs" />
+                </div>
+              )}
             </div>
             <Link href={reportHref} className="btn btn-accent">Open report</Link>
           </div>
