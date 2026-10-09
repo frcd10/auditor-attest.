@@ -1,5 +1,9 @@
 # Design review
 
+> Written for the original build (USDC payments, Docker worker, GitHub OAuth). On
+> 2026-10-09 the product pivoted to BYOK + GitHub Actions + devnet; see README.md and
+> docs/deploy.md for the current shape. Kept as history.
+
 What exists, how the pieces talk to each other, the trust boundaries, and what is
 missing or thin. Written after Phases 0–3 were implemented and before the first real run.
 

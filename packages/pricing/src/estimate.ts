@@ -1,13 +1,3 @@
-import {
-  CORPUS_FULL_TOKENS,
-  FIXED_FLOOR_INPUT_TOKENS,
-  INPUT_TOKENS_BY_LOC,
-  INPUT_TOKENS_PER_LOC,
-  OUTPUT_TOKENS_BY_LOC,
-  REFERENCE_MONOREPO_CORPUS_TOKENS,
-  VARIABLE_MULTIPLIER,
-  interpolate,
-} from "./costs.js";
 import { getModel, loadModels, type ModelPricing, type ModelsConfig } from "./models.js";
 import { detectScope, type LanguageMix, type RepoMarkers, type Scope } from "./scope.js";
 
@@ -29,6 +19,39 @@ export function applyScope(languages: LanguageMix, markers: Partial<RepoMarkers>
   return { loc, languages: kept, markers: { anchorToml: markers.anchorToml, cargoToml: markers.cargoToml, rustOffchain: false } };
 }
 
+/**
+ * Token profile of one single-agent run (`/auditor` corpus 7.3.0, Mode 1, linear, Bash
+ * read-only), fitted on the eight Claude Opus 5 program-scope runs recorded in
+ * docs/calibration.md (356 to 13,344 Rust LOC, $16.0 to $32.2 at list prices). The run
+ * is dominated by prompt-cache reads: every turn re-reads the corpus and the code already
+ * in context, so cost is mostly a large fixed part plus a gentle slope per line.
+ *
+ *   output       ≈ 230K + 5 /LOC      (observed 216K–312K)
+ *   cache reads  ≈ 14.0M + 1,600 /LOC (observed 11.9M–37.7M; the intercept is set high
+ *                                      because small repos vary the most: 12M–20M)
+ *   cache writes ≈ 380K + 20 /LOC     (observed 380K–656K)
+ *   uncached in  ≈ 1K                 (observed 106–216)
+ *
+ * SAFETY_FACTOR lifts the fit so every calibration run lands under the estimate (the
+ * tightest is Meteora/dynamic-fee-sharing, 1,072 LOC for $22.54), while staying within
+ * 1.5× of the cheapest. The figure we show is an upper bound for a normal run, not a mean.
+ */
+export const SINGLE_AGENT_PROFILE = {
+  outputBase: 230_000,
+  outputPerLoc: 5,
+  cacheReadBase: 14_000_000,
+  cacheReadPerLoc: 1_600,
+  cacheWriteBase: 380_000,
+  cacheWritePerLoc: 20,
+  uncachedInput: 1_000,
+} as const;
+
+/** Multiplier on the mean fit so that every calibration run lands under the estimate. */
+export const SAFETY_FACTOR = 1.4;
+
+/** Extra headroom the user is told to put on the workspace spend limit, on top of the estimate. */
+export const LIMIT_HEADROOM = 1.2;
+
 export interface EstimateInput {
   /** Code lines (tokei `code`, after exclusions). */
   loc: number;
@@ -37,45 +60,38 @@ export interface EstimateInput {
   /** Corpus scope. Default full. `program` narrows loc/languages to the on-chain code. */
   scope?: AuditScope;
   model: string;
-  /** Price = cost × margin. Default from MARGIN env (2.5). */
-  margin?: number;
-  /** Post-calibration multiplier on the raw estimate. Default PRICING_CALIBRATION env (1.0). */
+  /** Multiplier on the fitted mean. Default PRICING_CALIBRATION env, else SAFETY_FACTOR. */
   calibration?: number;
-  /** BYOK flat fee in USDC. Default ATTEST_FEE_USDC env. */
-  attestFeeUsdc?: number;
   models?: ModelsConfig;
 }
 
 export interface TokenBreakdown {
-  fixedFloor: number;
-  corpusChecklists: number;
-  corpusKnownVectors: number;
-  corpusReferences: number;
-  corpusTemplatesAndDiscovery: number;
-  codeReading: number;
-  codeOverhead: number; // cross-ref + grep + checkpoints (0.6× code)
-  inputTotal: number;
+  /** Uncached input tokens (tiny: the CLI caches the whole prefix). */
+  input: number;
+  /** Prompt-cache reads: the corpus + the code re-read on every turn. */
+  cacheRead: number;
+  /** Prompt-cache writes: new context added across turns. */
+  cacheWrite: number;
   output: number;
-  /** COSTS.md table interpolation, for display only. */
-  corpusTableInput: number;
+  /** input + cacheRead + cacheWrite: everything the model read. */
+  inputTotal: number;
+  /** Lines of code the run reads (after scope narrowing). */
+  loc: number;
 }
 
 export interface Estimate {
   model: ModelPricing;
   scope: Scope;
   tokens: TokenBreakdown;
-  /** Raw formula cost, USD. */
+  /** Mean-fit cost at the model's list prices, USD. */
   rawCostUsd: number;
   calibration: number;
-  /** rawCostUsd × calibration. This is what the budget cap derives from. */
+  /** rawCostUsd × calibration: the figure shown to the user and the basis of the budget cap. */
   estCostUsd: number;
-  margin: number;
-  /** Standard tier price in USDC, rounded up to cents. */
-  priceUsdc: number;
-  /** BYOK tier price in USDC. */
-  attestFeeUsdc: number;
-  /** Estimate for the free tier: always 0. */
-  quickUsdc: 0;
+  /** estCostUsd × LIMIT_HEADROOM, rounded up to the dollar: what to set as the workspace spend limit. */
+  suggestedLimitUsd: number;
+  /** Typical wall-clock, minutes (observed 15–22 for Opus 5, up to 36 for Fable). */
+  typicalMinutes: [number, number];
 }
 
 export function envNumber(name: string, fallback: number): number {
@@ -90,62 +106,14 @@ export function ceilCents(x: number): number {
   return Math.ceil(x * 100 - 1e-9) / 100;
 }
 
-/**
- * Weight of each corpus component for a scope, in upper-bound tokens (COSTS.md § Variable
- * Cost). References load per grep marker, unknown before the audit reads the code, so they
- * scale with the checklist fraction; audit-cycle touches nearly every template/discovery
- * file, so that component is always full.
- */
-function corpusWeights(scope: Scope) {
-  return {
-    checklists: CORPUS_FULL_TOKENS.checklists * scope.checklistFraction,
-    knownVectors: CORPUS_FULL_TOKENS.knownVectors * scope.vectorFraction,
-    references: CORPUS_FULL_TOKENS.references * scope.checklistFraction,
-    templatesAndDiscovery: CORPUS_FULL_TOKENS.templatesAndDiscovery,
-  };
-}
-
-/** Scope of the COSTS.md reference monorepo: Anchor program + TS backend + Next.js web. */
-const REFERENCE_SCOPE = detectScope(
-  { Rust: { code: 1, comments: 0, blanks: 0, files: 1 }, TypeScript: { code: 1, comments: 0, blanks: 0, files: 1 }, TSX: { code: 1, comments: 0, blanks: 0, files: 1 } },
-  { anchorToml: true, packageJson: true, web: true, backend: true },
-);
-const sum = (w: Record<string, number>) => Object.values(w).reduce((a, b) => a + b, 0);
-const REFERENCE_WEIGHT = sum(corpusWeights(REFERENCE_SCOPE));
-
-export function estimateTokens(loc: number, scope: Scope): TokenBreakdown {
-  const codeReading = Math.round(loc * INPUT_TOKENS_PER_LOC);
-  const codeOverhead = Math.round(codeReading * (VARIABLE_MULTIPLIER - 1));
-  // Scale the corpus's measured load for its reference monorepo by this repo's in-scope share.
-  const w = corpusWeights(scope);
-  const wTotal = sum(w);
-  const corpusTotal = REFERENCE_MONOREPO_CORPUS_TOKENS * (wTotal / REFERENCE_WEIGHT);
-  const part = (x: number) => Math.round(corpusTotal * (x / wTotal));
-  const corpusChecklists = part(w.checklists);
-  const corpusKnownVectors = part(w.knownVectors);
-  const corpusReferences = part(w.references);
-  const corpusTemplatesAndDiscovery = part(w.templatesAndDiscovery);
-  const inputTotal =
-    FIXED_FLOOR_INPUT_TOKENS +
-    corpusChecklists +
-    corpusKnownVectors +
-    corpusReferences +
-    corpusTemplatesAndDiscovery +
-    codeReading +
-    codeOverhead;
-  const output = interpolate(OUTPUT_TOKENS_BY_LOC, loc);
-  return {
-    fixedFloor: FIXED_FLOOR_INPUT_TOKENS,
-    corpusChecklists,
-    corpusKnownVectors,
-    corpusReferences,
-    corpusTemplatesAndDiscovery,
-    codeReading,
-    codeOverhead,
-    inputTotal,
-    output,
-    corpusTableInput: interpolate(INPUT_TOKENS_BY_LOC, loc),
-  };
+export function estimateTokens(loc: number): TokenBreakdown {
+  const p = SINGLE_AGENT_PROFILE;
+  const l = Math.max(0, loc);
+  const input = p.uncachedInput;
+  const cacheRead = Math.round(p.cacheReadBase + p.cacheReadPerLoc * l);
+  const cacheWrite = Math.round(p.cacheWriteBase + p.cacheWritePerLoc * l);
+  const output = Math.round(p.outputBase + p.outputPerLoc * l);
+  return { input, cacheRead, cacheWrite, output, inputTotal: input + cacheRead + cacheWrite, loc: l };
 }
 
 export function estimate(input: EstimateInput): Estimate {
@@ -154,13 +122,15 @@ export function estimate(input: EstimateInput): Estimate {
   const narrowed = applyScope(input.languages, input.markers ?? {}, input.scope ?? "full");
   const loc = input.scope === "program" ? narrowed.loc : input.loc;
   const scope = detectScope(narrowed.languages, narrowed.markers);
-  const tokens = estimateTokens(loc, scope);
+  const tokens = estimateTokens(loc);
   const rawCostUsd =
-    (tokens.inputTotal * model.input_per_mtok + tokens.output * model.output_per_mtok) / 1_000_000;
-  const calibration = input.calibration ?? envNumber("PRICING_CALIBRATION", 1.0);
-  const margin = input.margin ?? envNumber("MARGIN", 2.5);
-  const attestFeeUsdc = input.attestFeeUsdc ?? envNumber("ATTEST_FEE_USDC", 5);
-  const estCostUsd = rawCostUsd * calibration;
+    (tokens.input * model.input_per_mtok +
+      tokens.cacheRead * model.cache_read_per_mtok +
+      tokens.cacheWrite * model.cache_write_per_mtok +
+      tokens.output * model.output_per_mtok) /
+    1_000_000;
+  const calibration = input.calibration ?? envNumber("PRICING_CALIBRATION", SAFETY_FACTOR);
+  const estCostUsd = ceilCents(rawCostUsd * calibration);
   return {
     model,
     scope,
@@ -168,14 +138,12 @@ export function estimate(input: EstimateInput): Estimate {
     rawCostUsd,
     calibration,
     estCostUsd,
-    margin,
-    priceUsdc: ceilCents(estCostUsd * margin),
-    attestFeeUsdc: ceilCents(attestFeeUsdc),
-    quickUsdc: 0,
+    suggestedLimitUsd: Math.ceil(estCostUsd * LIMIT_HEADROOM),
+    typicalMinutes: model.tier === "max" ? [30, 40] : [15, 25],
   };
 }
 
-/** Hard spend cap handed to the sandbox. */
-export function budgetFor(est: Pick<Estimate, "estCostUsd">, factor = envNumber("BUDGET_FACTOR", 1.5)): number {
+/** Hard spend cap handed to the runner (USD). */
+export function budgetFor(est: Pick<Estimate, "estCostUsd">, factor = envNumber("BUDGET_FACTOR", LIMIT_HEADROOM)): number {
   return Math.max(0.5, ceilCents(est.estCostUsd * factor));
 }

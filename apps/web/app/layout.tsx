@@ -8,7 +8,7 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "sw
 
 export const metadata: Metadata = {
   title: { default: "Auditor Attest", template: "%s · Auditor Attest" },
-  description: "AI security audits for Solana repositories, run in an isolated sandbox and attested on Solana mainnet.",
+  description: "Open-source, free AI security audits for Solana repositories on your own model key, attested on-chain. A public good.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

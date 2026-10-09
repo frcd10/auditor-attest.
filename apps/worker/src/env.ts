@@ -39,8 +39,8 @@ function num(name: string, fallback: number): number {
 export function loadEnv(): WorkerEnv {
   const repoRoot = findRepoRoot(process.cwd());
   const rel = (p: string | undefined, d: string) => resolve(repoRoot, p && p.length ? p : d);
-  const cluster = process.env.CLUSTER ?? "mainnet-beta";
-  if (cluster !== "mainnet-beta") throw new Error(`CLUSTER must be mainnet-beta (got ${cluster}); no other cluster is supported`);
+  const cluster = process.env.CLUSTER ?? "devnet";
+  if (cluster !== "devnet" && cluster !== "mainnet-beta") throw new Error(`CLUSTER must be devnet or mainnet-beta (got ${cluster})`);
   const kek = process.env.BYOK_KEK;
   if (kek && !/^[0-9a-f]{64}$/i.test(kek)) throw new Error("BYOK_KEK must be 64 hex chars (32 bytes)");
   return {

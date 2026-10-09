@@ -191,11 +191,14 @@ export async function ingestReport(env: WorkerEnv, input: IngestInput): Promise<
         visibility: visibility === "private" ? 0 : visibility === "public" ? 1 : 2,
       });
       const onChainVisibility = visibility === "private" ? 0 : visibility === "public" ? 1 : 2;
-      await prisma.attestation.upsert({
-        where: { reportId: row.id },
-        create: { reportId: row.id, pda: res.pda, txSig: res.txSig, attester: res.attester, slot: res.slot !== null ? BigInt(res.slot) : null, programId: res.programId, onChainVisibility },
-        update: { pda: res.pda, txSig: res.txSig, attester: res.attester, slot: res.slot !== null ? BigInt(res.slot) : null, programId: res.programId, onChainVisibility },
-      });
+      // The on-chain account is per (repo, commit) and now holds THIS report's hash
+      // (reattest), so the attestation row moves to this report even if a sibling
+      // report of the same commit owned it before.
+      const attData = { reportId: row.id, pda: res.pda, txSig: res.txSig, attester: res.attester, slot: res.slot !== null ? BigInt(res.slot) : null, programId: res.programId, onChainVisibility };
+      await prisma.$transaction([
+        prisma.attestation.deleteMany({ where: { OR: [{ pda: res.pda }, { reportId: row.id }] } }),
+        prisma.attestation.create({ data: attData }),
+      ]);
       meta.attestation = { tx: res.txSig, pda: res.pda, program_id: res.programId };
       writeFileSync(join(absDir, "meta.json"), JSON.stringify(meta, null, 2));
       attested = true;

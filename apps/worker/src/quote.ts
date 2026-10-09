@@ -25,7 +25,7 @@ export async function runQuote(env: WorkerEnv, job: Job): Promise<void> {
     const perModel = Object.fromEntries(
       models.map((m) => {
         const e = estimate({ loc: tokei.loc, languages: tokei.languages, markers, scope: scopeName, model: m.id, models: cfg });
-        return [m.id, { estCostUsd: e.estCostUsd, rawCostUsd: e.rawCostUsd, priceUsdc: e.priceUsdc, attestFeeUsdc: e.attestFeeUsdc, tokens: e.tokens }];
+        return [m.id, { estCostUsd: e.estCostUsd, rawCostUsd: e.rawCostUsd, suggestedLimitUsd: e.suggestedLimitUsd, tokens: e.tokens, typicalMinutes: e.typicalMinutes }];
       }),
     );
     const chosen = models.some((m) => m.id === job.model) ? job.model : cfg.default;
@@ -47,11 +47,11 @@ export async function runQuote(env: WorkerEnv, job: Job): Promise<void> {
           estInputTokens: est.tokens.inputTotal,
           estOutputTokens: est.tokens.output,
           estCostUsd: est.estCostUsd,
-          margin: est.margin,
+          margin: 1,
           calibration: est.calibration,
-          priceUsdc: est.priceUsdc,
-          attestFeeUsdc: est.attestFeeUsdc,
-          breakdown: { chosen: est.tokens, perModel, excluded: tokei.excluded, reasons: est.scope.reasons, auditScope: scopeName } as object,
+          priceUsdc: 0,
+          attestFeeUsdc: 0,
+          breakdown: { chosen: est.tokens, perModel, excluded: tokei.excluded, reasons: est.scope.reasons, auditScope: scopeName, source: "tokei" } as object,
           expiresAt: new Date(Date.now() + ttlMin * 60_000),
         },
         update: {
@@ -65,17 +65,17 @@ export async function runQuote(env: WorkerEnv, job: Job): Promise<void> {
           estInputTokens: est.tokens.inputTotal,
           estOutputTokens: est.tokens.output,
           estCostUsd: est.estCostUsd,
-          margin: est.margin,
+          margin: 1,
           calibration: est.calibration,
-          priceUsdc: est.priceUsdc,
-          attestFeeUsdc: est.attestFeeUsdc,
-          breakdown: { chosen: est.tokens, perModel, excluded: tokei.excluded, reasons: est.scope.reasons, auditScope: scopeName } as object,
+          priceUsdc: 0,
+          attestFeeUsdc: 0,
+          breakdown: { chosen: est.tokens, perModel, excluded: tokei.excluded, reasons: est.scope.reasons, auditScope: scopeName, source: "tokei" } as object,
           expiresAt: new Date(Date.now() + ttlMin * 60_000),
         },
       }),
       prisma.job.update({ where: { id: job.id }, data: { status: "quoted", commitSha: sha, model: chosen, error: null } }),
     ]);
-    await jobEvent(job.id, "quote ready", { loc: tokei.loc, files: tokei.files, model: chosen, estCostUsd: est.estCostUsd, priceUsdc: est.priceUsdc });
+    await jobEvent(job.id, "quote ready", { loc: tokei.loc, files: tokei.files, model: chosen, estCostUsd: est.estCostUsd });
     if (job.autoEnqueue && job.tier !== "quick") {
       const budget = budgetFor(est);
       await prisma.job.update({ where: { id: job.id }, data: { status: "queued", budgetUsd: budget } });

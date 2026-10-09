@@ -29,11 +29,11 @@ async function main() {
   for (;;) {
     const j = await prisma.job.findUniqueOrThrow({ where: { id: job.id }, include: { quote: true, events: { orderBy: { at: "desc" }, take: 1 } } });
     if (j.status === "quoted" && j.quote) {
-      const b = j.quote.breakdown as { perModel?: Record<string, { estCostUsd: number; priceUsdc: number }> };
+      const b = j.quote.breakdown as { perModel?: Record<string, { estCostUsd: number; suggestedLimitUsd: number }> };
       console.log(`quoted in ${((Date.now() - started) / 1000).toFixed(1)}s: commit ${j.commitSha} · ${j.quote.loc} code LOC · ${j.quote.files} files`);
       console.log("languages:", JSON.stringify(j.quote.languages));
       console.log("scope:", JSON.stringify(j.quote.scope));
-      console.table(Object.fromEntries(Object.entries(b.perModel ?? {}).map(([k, v]) => [k, { estCostUsd: v.estCostUsd.toFixed(4), priceUsdc: v.priceUsdc }])));
+      console.table(Object.fromEntries(Object.entries(b.perModel ?? {}).map(([k, v]) => [k, { estCostUsd: v.estCostUsd.toFixed(4), suggestedLimitUsd: v.suggestedLimitUsd }])));
       if (!process.argv.includes("--keep")) {
         await prisma.job.update({ where: { id: job.id }, data: { tier: "quick", status: "done", finishedAt: new Date() } });
         console.log("quick tier selected → done");

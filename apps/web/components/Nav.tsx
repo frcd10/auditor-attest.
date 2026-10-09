@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { siteRepoUrl } from "@/lib/env";
 
 export function Logo() {
   return (
@@ -17,9 +18,9 @@ export function Nav() {
         <nav className="hidden items-center gap-7 text-sm text-[var(--muted)] md:flex">
           <Link href="/explore" className="hover:text-white">Audits</Link>
           <Link href="/stats" className="hover:text-white">Stats</Link>
+          <Link href="/#ways" className="hover:text-white">Ways to use</Link>
           <Link href="/#how" className="hover:text-white">How it works</Link>
-          <Link href="/#pricing" className="hover:text-white">Pricing</Link>
-          <a href="https://github.com/solanabr/auditor-skill" target="_blank" rel="noreferrer" className="hover:text-white">Corpus ↗</a>
+          <a href={siteRepoUrl()} target="_blank" rel="noreferrer" className="hover:text-white">Source ↗</a>
         </nav>
         <Link href="/#start" className="btn btn-primary btn-sm">Start an audit</Link>
       </div>

@@ -2,9 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Markdown } from "@/components/Markdown";
 import { SeverityTiles } from "@/components/SeverityBadges";
-import { corpusVersion, siteUrl } from "@/lib/env";
+import { clusterLabel, corpusVersion, explorerUrl, siteBranch, siteRepo, siteRepoUrl, siteUrl } from "@/lib/env";
 import { int, shortSha, usd, when } from "@/lib/format";
-import { githubConfigured } from "@/lib/github";
 import { findReport, loadReport } from "@/lib/reports";
 
 export const dynamic = "force-dynamic";
@@ -14,7 +13,7 @@ type Params = { owner: string; repo: string; sha: string };
 async function load(params: Params, token: string | undefined, version: string | undefined) {
   const found = await findReport(params.owner, params.repo, params.sha, version);
   if (!found) return null;
-  const loaded = loadReport(found.row, found.siblings);
+  const loaded = await loadReport(found.row, found.siblings);
   if (!loaded) return null;
   if (loaded.visibility === "private" && token !== found.row.accessToken) return "private" as const;
   return loaded;
@@ -33,15 +32,16 @@ export async function generateMetadata({ params, searchParams }: { params: Promi
   };
 }
 
-export default async function ReportPage({ params, searchParams }: { params: Promise<Params>; searchParams: Promise<{ t?: string; v?: string; verified?: string; verify_error?: string }> }) {
+export default async function ReportPage({ params, searchParams }: { params: Promise<Params>; searchParams: Promise<{ t?: string; v?: string }> }) {
   const p = await params;
-  const { t, v, verified, verify_error } = await searchParams;
+  const { t, v } = await searchParams;
   const r = await load(p, t, v);
   if (!r || r === "private") notFound();
   const { row, siblings, parsed, markdown, redacted, visibility } = r;
   const others = siblings.filter((s) => s.id !== row.id && s.visibility !== "private");
   const att = row.attestation;
   const readmeBadge = `[![audit](${siteUrl()}/badge/${row.owner}/${row.repo}.svg)](${siteUrl()}/r/${row.owner}/${row.repo})`;
+  const sourceUrl = `${siteRepoUrl()}/blob/${siteBranch()}/reports/${row.storagePath}/report.md`;
 
   return (
     <div className="container-x space-y-6 pt-12 pb-8">
@@ -69,17 +69,10 @@ export default async function ReportPage({ params, searchParams }: { params: Pro
         )}
       </section>
 
-      {verified && <div className="rounded-2xl border border-[var(--green)] bg-[#0f2a1f] p-4 text-sm">{verified}</div>}
-      {verify_error && <div className="rounded-2xl border border-[var(--high)] bg-[#2a1f12] p-4 text-sm">Acknowledgement failed: {verify_error}</div>}
       {redacted && (
         <div className="rounded-2xl border border-[var(--high)] bg-[#2a1f12] p-4 text-sm">
-          <b>Critical and High findings are withheld.</b> The submitter is not a verified maintainer. They become visible when a maintainer acknowledges this report or on {row.redactUntil ? row.redactUntil.toISOString().slice(0, 10) : "the disclosure date"}. The counts above are exact and match the on-chain attestation.
-          {githubConfigured() && (
-            <>
-              {" "}
-              <a href={`/api/auth/github?report=${row.id}`} className="font-semibold underline">Maintainer? Acknowledge with GitHub →</a>
-            </>
-          )}
+          <b>Critical and High findings are withheld.</b> This report was not submitted by a verified maintainer. They become visible on {row.redactUntil ? row.redactUntil.toISOString().slice(0, 10) : "the disclosure date"}. The counts above are exact and match the on-chain attestation.
+          {" "}Maintainers who want the full text sooner: <a href={`${siteRepoUrl()}/issues/new?title=${encodeURIComponent(`Disclosure request: ${row.owner}/${row.repo}@${shortSha(row.commit)}`)}`} target="_blank" rel="noreferrer" className="font-semibold underline">open an issue from the repository&apos;s org ↗</a>.
         </div>
       )}
 
@@ -96,6 +89,12 @@ export default async function ReportPage({ params, searchParams }: { params: Pro
             <dd className="break-all">{row.reportSha256}</dd>
             <dt className="text-[var(--muted)]">Usage</dt>
             <dd>{int(row.inputTokens)} in · {int(row.outputTokens)} out · {int(row.cacheReadTokens)} cached · {usd(Number(row.costUsd), 2)}</dd>
+            {visibility !== "private" && (
+              <>
+                <dt className="text-[var(--muted)]">Source file</dt>
+                <dd className="break-all"><a href={sourceUrl} target="_blank" rel="noreferrer" className="text-[var(--green)]">{siteRepo()}/reports/… ↗</a></dd>
+              </>
+            )}
           </dl>
           {visibility !== "private" && (
             <details className="mt-4 text-xs text-[var(--muted)]">
@@ -105,21 +104,22 @@ export default async function ReportPage({ params, searchParams }: { params: Pro
           )}
         </div>
         <div className="card p-6">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">On-chain attestation</h2>
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">On-chain attestation · {clusterLabel()}</h2>
           {att ? (
             <dl className="mono mt-3 grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-xs">
               <dt className="text-[var(--muted)]">Transaction</dt>
-              <dd className="break-all"><a href={`https://explorer.solana.com/tx/${att.txSig}`} target="_blank" rel="noreferrer" className="text-[var(--green)]">{att.txSig}</a></dd>
+              <dd className="break-all"><a href={explorerUrl("tx", att.txSig)} target="_blank" rel="noreferrer" className="text-[var(--green)]">{att.txSig}</a></dd>
               <dt className="text-[var(--muted)]">Account</dt>
-              <dd className="break-all"><a href={`https://explorer.solana.com/address/${att.pda}`} target="_blank" rel="noreferrer" className="text-[var(--green)]">{att.pda}</a></dd>
+              <dd className="break-all"><a href={explorerUrl("address", att.pda)} target="_blank" rel="noreferrer" className="text-[var(--green)]">{att.pda}</a></dd>
               <dt className="text-[var(--muted)]">Attester</dt>
               <dd className="break-all">{att.attester}</dd>
               <dt className="text-[var(--muted)]">Program</dt>
-              <dd className="break-all">{att.programId}</dd>
+              <dd className="break-all"><a href={explorerUrl("address", att.programId)} target="_blank" rel="noreferrer" className="text-[var(--green)]">{att.programId}</a></dd>
             </dl>
           ) : (
-            <p className="mt-3 text-sm text-[var(--muted)]">Not attested yet. The attestation is written after ingest once the program is deployed; it will bind this report's hash, commit, corpus version, model and the counts above.</p>
+            <p className="mt-3 text-sm text-[var(--muted)]">Not attested yet. The attestation binds this report&apos;s hash, commit, corpus version, model and the counts above into one account on {clusterLabel()}.</p>
           )}
+          <p className="mt-3 text-xs text-[var(--dim)]">Verify without us: the account address is the PDA of sha256(lowercased repo url) + the commit bytes under the program; its data holds the report sha256 above.</p>
           {parsed.warnings.length > 0 && (
             <details className="mt-4 text-xs text-[var(--muted)]">
               <summary className="cursor-pointer">Parser notes ({parsed.warnings.length})</summary>

@@ -1,14 +1,14 @@
 const LABELS: Record<string, [string, string]> = {
   quoting: ["Quoting", "var(--purple)"],
   quote_running: ["Quoting", "var(--purple)"],
-  quoted: ["Quote ready", "var(--green)"],
-  awaiting_payment: ["Awaiting payment", "var(--medium)"],
+  quoted: ["Estimate ready", "var(--green)"],
+  awaiting_payment: ["Waiting for your key", "var(--medium)"],
   queued: ["Queued", "var(--purple)"],
   running: ["Auditing", "var(--purple)"],
   ingesting: ["Finalizing", "var(--purple)"],
   done: ["Done", "var(--green)"],
   failed: ["Failed", "var(--critical)"],
-  failed_budget: ["Stopped at budget", "var(--critical)"],
+  failed_budget: ["Stopped at spend limit", "var(--critical)"],
   cancelled: ["Cancelled", "var(--muted)"],
   refunded: ["Refunded", "var(--muted)"],
 };

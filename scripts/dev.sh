@@ -36,8 +36,8 @@ fi
 if [ ! -f .env ]; then
   step ".env (created from .env.example with generated secrets)"
   cp .env.example .env
-  sed -i "s|^ADMIN_TOKEN=.*|ADMIN_TOKEN=$(openssl rand -hex 24)|; s|^BYOK_KEK=.*|BYOK_KEK=$(openssl rand -hex 32)|; s|^AUTH_SECRET=.*|AUTH_SECRET=$(openssl rand -hex 32)|" .env
-  echo "  fill ANTHROPIC_API_KEY / RPC_URL / TREASURY_PUBKEY in .env when you need them"
+  sed -i "s|^BYOK_KEK=.*|BYOK_KEK=$(openssl rand -hex 32)|" .env
+  echo "  fill ATTESTER_KEYPAIR_PATH / GITHUB_DISPATCH_TOKEN in .env when you need them"
 fi
 
 # ── corpus submodule ────────────────────────────────────────────────────────

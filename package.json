@@ -30,7 +30,12 @@
     "audit:batch": "tsx scripts/audit-batch.ts",
     "refund": "tsx scripts/refund.ts",
     "check:secrets": "bash scripts/check-secrets.sh",
-    "hooks:install": "git config core.hooksPath .githooks && echo 'git hooks installed (.githooks)'"
+    "hooks:install": "git config core.hooksPath .githooks && echo 'git hooks installed (.githooks)'",
+    "build:web": "pnpm --filter @auditor/db generate && pnpm -r --filter './packages/**' --filter '!@auditor/db' build && pnpm --filter @auditor/web build",
+    "unpublish": "tsx scripts/unpublish.ts",
+    "check:freshness": "tsx scripts/check-freshness.ts",
+    "ci:audit": "tsx scripts/ci-audit.ts",
+    "db:deploy:prod": "dotenv -e .env -v DATABASE_URL=\"$PROD_DATABASE_URL\" -- pnpm --filter @auditor/db exec prisma migrate deploy"
   },
   "devDependencies": {
     "@auditor/attest": "workspace:*",

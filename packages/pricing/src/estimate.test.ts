@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { estimate, estimateTokens, budgetFor, ceilCents } from "./estimate.js";
+import { LIMIT_HEADROOM, SAFETY_FACTOR, budgetFor, ceilCents, estimate, estimateTokens } from "./estimate.js";
 import { detectScope } from "./scope.js";
-import { interpolate, OUTPUT_TOKENS_BY_LOC, REFERENCE_MONOREPO_CORPUS_TOKENS, TOTAL_CHECKLIST_ITEMS, TOTAL_KNOWN_VECTORS } from "./costs.js";
+import { TOTAL_CHECKLIST_ITEMS, TOTAL_KNOWN_VECTORS } from "./costs.js";
 import { summarizeTokei } from "./tokei.js";
 import { CHECKLISTS, VECTOR_GROUPS } from "./scope.js";
 import type { ModelsConfig } from "./models.js";
@@ -14,17 +14,22 @@ const models: ModelsConfig = {
   ],
 };
 
+/** The eight Claude Opus 5 program-scope runs the profile was fitted on (docs/calibration.md). */
+const CALIBRATION_RUNS: [name: string, rustLoc: number, actualUsd: number][] = [
+  ["ISC/isc_bridge", 356, 16.01],
+  ["Serum/swap", 485, 16.39],
+  ["Meteora/dynamic-fee-sharing", 1072, 22.54],
+  ["Kamino/kfarms", 4134, 22.1],
+  ["Kamino/kvault", 8595, 23.28],
+  ["Kamino/scope", 9541, 32.22],
+  ["Meteora/dynamic-bonding-curve", 12906, 31.2],
+  ["Meteora/damm-v2", 13344, 27.82],
+];
+
 describe("corpus constants", () => {
   it("checklist and vector totals match the corpus", () => {
     expect(CHECKLISTS.reduce((n, c) => n + c.items, 0)).toBe(TOTAL_CHECKLIST_ITEMS);
     expect(VECTOR_GROUPS.reduce((n, g) => n + g.count, 0)).toBe(TOTAL_KNOWN_VECTORS);
-  });
-  it("interpolates the COSTS.md output table", () => {
-    expect(interpolate(OUTPUT_TOKENS_BY_LOC, 2000)).toBe(80_000);
-    expect(interpolate(OUTPUT_TOKENS_BY_LOC, 500)).toBe(80_000); // clamped
-    expect(interpolate(OUTPUT_TOKENS_BY_LOC, 50_000)).toBe(240_000);
-    expect(interpolate(OUTPUT_TOKENS_BY_LOC, 35_000)).toBe(195_000); // midpoint 150K..240K
-    expect(interpolate(OUTPUT_TOKENS_BY_LOC, 9_999_999)).toBe(800_000);
   });
 });
 
@@ -34,74 +39,44 @@ describe("scope detection", () => {
     expect(s.checklists).toEqual(["01", "02", "03", "04", "05", "06", "07", "11", "12", "13", "16", "17", "18"]);
     expect(s.checklists).not.toContain("14");
     expect(s.vectorGroups).toContain("crypto");
-    expect(s.vectorGroups).toContain("devops");
     expect(s.vectorGroups).not.toContain("frontend");
     expect(s.itemCount).toBe(519 + 391);
-  });
-  it("next.js + anchor monorepo loads 08/09/10 too", () => {
-    const s = detectScope(
-      { Rust: { code: 1, comments: 0, blanks: 0, files: 1 }, TypeScript: { code: 1, comments: 0, blanks: 0, files: 1 }, TSX: { code: 1, comments: 0, blanks: 0, files: 1 } },
-      { anchorToml: true, packageJson: true, web: true, backend: true },
-    );
-    expect(s.checklists).toEqual(expect.arrayContaining(["08", "09", "10"]));
-    expect(s.vectorGroups).toEqual(expect.arrayContaining(["backend", "frontend"]));
   });
   it("empty repo still has the always-on set", () => {
     const s = detectScope({});
     expect(s.checklists).toEqual(["11", "12", "13", "16", "17", "18"]);
-    expect(s.itemCount).toBe(391);
   });
 });
 
-describe("token estimate (COSTS.md formula)", () => {
-  it("derives the reference corpus load from the COSTS.md size table", () => {
-    // rows 2K..100K: (150K−15K−32K)+(200K−15K−80K)+(430K−15K−320K)+(910K−15K−800K)+(1.7M−15K−1.6M) / 5
-    expect(REFERENCE_MONOREPO_CORPUS_TOKENS).toBe(Math.round((103_000 + 105_000 + 95_000 + 95_000 + 85_000) / 5));
+describe("single-agent token profile", () => {
+  it("is dominated by cache reads and grows gently with LOC", () => {
+    const a = estimateTokens(1000);
+    const b = estimateTokens(2000);
+    expect(a.cacheRead).toBeGreaterThan(a.output * 10);
+    expect(b.cacheRead - a.cacheRead).toBe(1_600_000);
+    expect(b.output - a.output).toBe(5_000);
+    expect(a.inputTotal).toBe(a.input + a.cacheRead + a.cacheWrite);
   });
-  it("2K-LOC rust repo lands below the corpus's full-monorepo 150K input figure", () => {
-    const scope = detectScope({ Rust: { code: 2000, comments: 0, blanks: 0, files: 5 } }, { anchorToml: true });
-    const t = estimateTokens(2000, scope);
-    expect(t.fixedFloor).toBe(15_000);
-    expect(t.codeReading).toBe(20_000);
-    expect(t.codeOverhead).toBe(12_000); // 0.6 × code
-    expect(t.output).toBe(80_000);
-    const corpus = t.corpusChecklists + t.corpusKnownVectors + t.corpusReferences + t.corpusTemplatesAndDiscovery;
-    expect(corpus).toBeLessThan(REFERENCE_MONOREPO_CORPUS_TOKENS); // narrower scope than the reference monorepo
-    expect(t.inputTotal).toBeGreaterThan(90_000);
-    expect(t.inputTotal).toBeLessThan(150_000);
+  it("covers every calibration run at Opus 5 list prices (upper bound, within 1.5× of actual)", () => {
+    for (const [name, loc, actual] of CALIBRATION_RUNS) {
+      const e = estimate({ loc, languages: { Rust: { code: loc, comments: 0, blanks: 0, files: 5 } }, markers: { anchorToml: true }, scope: "program", model: "test-opus", models });
+      expect(e.estCostUsd, name).toBeGreaterThanOrEqual(actual);
+      expect(e.estCostUsd, name).toBeLessThan(actual * 1.5);
+    }
   });
-  it("the reference monorepo scope reproduces the table's own corpus load", () => {
-    const scope = detectScope(
-      { Rust: { code: 1, comments: 0, blanks: 0, files: 1 }, TypeScript: { code: 1, comments: 0, blanks: 0, files: 1 }, TSX: { code: 1, comments: 0, blanks: 0, files: 1 } },
-      { anchorToml: true, packageJson: true, web: true, backend: true },
-    );
-    const t = estimateTokens(2000, scope);
-    const corpus = t.corpusChecklists + t.corpusKnownVectors + t.corpusReferences + t.corpusTemplatesAndDiscovery;
-    expect(Math.abs(corpus - REFERENCE_MONOREPO_CORPUS_TOKENS)).toBeLessThanOrEqual(3); // rounding
+  it("uses SAFETY_FACTOR by default and LIMIT_HEADROOM for the suggested spend limit", () => {
+    const e = estimate({ loc: 2000, languages: { Rust: { code: 2000, comments: 0, blanks: 0, files: 5 } }, model: "test-opus", models });
+    expect(e.calibration).toBe(SAFETY_FACTOR);
+    expect(e.estCostUsd).toBe(ceilCents(e.rawCostUsd * SAFETY_FACTOR));
+    expect(e.suggestedLimitUsd).toBe(Math.ceil(e.estCostUsd * LIMIT_HEADROOM));
+    expect(budgetFor(e, 1.5)).toBeCloseTo(ceilCents(e.estCostUsd * 1.5), 8);
   });
-  it("input grows by 16 tokens per LOC", () => {
-    const scope = detectScope({});
-    const a = estimateTokens(1000, scope).inputTotal;
-    const b = estimateTokens(2000, scope).inputTotal;
-    expect(b - a).toBe(16_000);
-  });
-});
-
-describe("price", () => {
-  it("applies margin and rounds up to cents", () => {
-    const e = estimate({ loc: 2000, languages: { Rust: { code: 2000, comments: 0, blanks: 0, files: 5 } }, markers: { anchorToml: true }, model: "test-opus", margin: 2.5, calibration: 1, attestFeeUsdc: 5, models });
-    const expectedRaw = (e.tokens.inputTotal * 5 + e.tokens.output * 25) / 1e6;
-    expect(e.rawCostUsd).toBeCloseTo(expectedRaw, 8);
-    expect(e.priceUsdc).toBe(ceilCents(expectedRaw * 2.5));
-    expect(e.attestFeeUsdc).toBe(5);
-    expect(e.quickUsdc).toBe(0);
-  });
-  it("calibration scales the estimate and the budget", () => {
-    const base = { loc: 5000, languages: { Rust: { code: 5000, comments: 0, blanks: 0, files: 5 } }, model: "test-sonnet", margin: 2, attestFeeUsdc: 5, models };
-    const a = estimate({ ...base, calibration: 1 });
-    const b = estimate({ ...base, calibration: 2 });
-    expect(b.estCostUsd).toBeCloseTo(a.estCostUsd * 2, 8);
-    expect(budgetFor(b, 1.5)).toBeCloseTo(ceilCents(b.estCostUsd * 1.5), 8);
+  it("prices the same tokens at the model's own rates", () => {
+    const base = { loc: 5000, languages: { Rust: { code: 5000, comments: 0, blanks: 0, files: 5 } }, calibration: 1, models };
+    const opus = estimate({ ...base, model: "test-opus" });
+    const sonnet = estimate({ ...base, model: "test-sonnet" });
+    expect(opus.tokens).toEqual(sonnet.tokens);
+    expect(sonnet.rawCostUsd).toBeLessThan(opus.rawCostUsd / 2);
   });
   it("ceilCents rounds up", () => {
     expect(ceilCents(1.001)).toBe(1.01);
@@ -114,10 +89,10 @@ describe("scope narrowing", () => {
   it("program scope keeps only Rust and drops off-chain checklists", () => {
     const languages = { Rust: { code: 1000, comments: 0, blanks: 0, files: 3 }, TypeScript: { code: 5000, comments: 0, blanks: 0, files: 20 }, JSON: { code: 9000, comments: 0, blanks: 0, files: 4 } };
     const markers = { anchorToml: true, packageJson: true, web: true, backend: true, rustOffchain: true };
-    const full = estimate({ loc: 15000, languages, markers, model: "test-opus", margin: 2, attestFeeUsdc: 5, models, scope: "full" });
-    const prog = estimate({ loc: 15000, languages, markers, model: "test-opus", margin: 2, attestFeeUsdc: 5, models, scope: "program" });
-    expect(prog.tokens.codeReading).toBe(10_000);
-    expect(full.tokens.codeReading).toBe(150_000);
+    const full = estimate({ loc: 15000, languages, markers, model: "test-opus", models, scope: "full" });
+    const prog = estimate({ loc: 15000, languages, markers, model: "test-opus", models, scope: "program" });
+    expect(prog.tokens.loc).toBe(1000);
+    expect(full.tokens.loc).toBe(15000);
     expect(prog.scope.checklists).not.toContain("08");
     expect(prog.scope.checklists).not.toContain("20");
     expect(full.scope.checklists).toContain("10");

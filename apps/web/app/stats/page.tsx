@@ -1,5 +1,6 @@
 import { StatTile } from "@/components/StatTile";
 import { prisma } from "@/lib/db";
+import { clusterLabel } from "@/lib/env";
 import { int, usd } from "@/lib/format";
 
 export const dynamic = "force-dynamic";
@@ -22,8 +23,8 @@ export default async function StatsPage() {
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
         <StatTile label="Repositories audited" value={int(repos.length)} />
         <StatTile label="Reports" value={int(agg._count._all)} />
-        <StatTile label="Attested on mainnet" value={int(attested)} />
-        <StatTile label="LLM spend" value={usd(s.costUsd ? Number(s.costUsd) : 0)} accent="plain" hint="at config/models.json rates" />
+        <StatTile label={`Attested on ${clusterLabel()}`} value={int(attested)} />
+        <StatTile label="Model spend (users' keys)" value={usd(s.costUsd ? Number(s.costUsd) : 0)} accent="plain" hint="at config/models.json rates" />
       </div>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
         <StatTile label="Critical" value={int(s.critical ?? 0)} accent="critical" />

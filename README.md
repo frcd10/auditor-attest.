@@ -1,161 +1,129 @@
 # Auditor Attest
 
-## How I run it
+**A public good for the Solana ecosystem. 100% open source. Free to use.**
+
+Paste a public GitHub link, get a cost estimate, paste a throwaway Anthropic API key, and
+an AI auditor runs the open-source [auditor-skill](https://github.com/solanabr/auditor-skill)
+corpus (20 checklists, 1,413 items, 136 known attack vectors) against the code. The report
+is committed to this repository byte-for-byte and its hash, commit, corpus version, model
+and severity counts are written to an account on Solana devnet that anyone can verify.
+
+We charge nothing and hold no keys. The only cost is your own model usage, billed by
+Anthropic to your account, and we tell you the ceiling before you start.
+
+A rigorous first pass, not a substitute for a human audit, and never a "safe to deploy"
+stamp.
+
+## Three ways to use it
+
+| | How | What you need |
+|---|---|---|
+| **1. The site** | paste a link, create a key with a spend limit, wait 15–25 min | an Anthropic account |
+| **2. Inside Claude Code** | load the corpus as a plugin in your own repo and run `/auditor:audit` | Claude Code |
+| **3. Clone this repo** | `pnpm dev` brings up the whole thing locally; `pnpm audit:local` runs an audit with your own login | node, pnpm, Docker |
+
+### 2. Inside Claude Code
 
 ```bash
-cd ~/dev/auditor-site
-pnpm dev                      # → http://localhost:3000
+git clone https://github.com/solanabr/auditor-skill
+cd your-solana-repo
+claude --plugin-dir ../auditor-skill
+> /auditor:audit --scope program
 ```
 
-That one command does everything: installs dependencies, inits the corpus submodule,
-creates `.env` with generated secrets if missing, starts Postgres, generates the Prisma
-client, applies migrations, builds the shared packages, builds the sandbox images if they
-are missing, then runs the worker and the web app together. Every step is a fast no-op
-when nothing changed. `Ctrl+C` stops worker and web; `pnpm db:down` also stops Postgres
-(data is kept).
+The corpus is a Claude Code plugin; nothing of ours is involved. This repository pins it
+as a submodule at `vendor/auditor-skill` (`7.3.0@6bb2cbf`) and never edits it.
 
-Options: `pnpm dev -- --rebuild-images` (after changing `sandbox/`), `pnpm dev -- --setup-only`.
-`bash scripts/dev-up.sh` = setup + full build + tests, without starting anything.
+### 3. Clone and run locally
 
-**Audits you ran by hand** go in `examples i runned local/<Org>/<repo>/` (a git clone with
-the corpus's `audit_1/REPORT.md` inside; the folder is gitignored). Set `EXAMPLES_MODEL`
-in `.env` to the model you used and `pnpm dev` publishes them all on the site (repo and
-commit come from the clone). Dry run without a database:
-`pnpm ingest:examples -- --dry-run`.
+```bash
+git clone --recurse-submodules https://github.com/frcd10/auditor-attest.
+cd auditor-attest
+pnpm dev                       # → http://localhost:3000 (installs, Postgres, migrations, worker, web)
+pnpm audit:local -- Org/repo   # audit a clone under "examples i runned local/" with your Claude Code login
+```
 
-**Re-run one locally with your own Claude Code login** (no API key, single agent, current
-corpus 7.3.0): `pnpm audit:local -- Kamino/klend`. It pulls the newest default branch of the
-clone (hooks off, no submodules, detached checkout), runs `/auditor:audit --scope program`
-through the corpus plugin with Task/Agent disallowed and Bash limited to read-only
-inspection, writes `audit_N/REPORT.md` + `.attest.json`, and prints the counts. Add
-`--ingest` to publish it right away, `--scope full`, `--model <alias-or-id>` (default
-`fable`), `--no-pull`. Each run takes a while; run them one at a time. `pnpm audit:all`
-does exactly that for every clone not yet audited with the current corpus, smallest
-first, publishing each one (log in `audit-all.log`).
+`pnpm dev` does everything: dependencies, corpus submodule, `.env` with generated secrets,
+Postgres in Docker, Prisma, shared packages, sandbox images, then the worker and the web
+app. Every step is a no-op when nothing changed. Requirements: Linux (WSL2 is fine), node
+≥ 20, pnpm 10, git, `tokei`, Docker with the compose plugin.
 
-**Re-run all of them through the platform** (spends on `ANTHROPIC_API_KEY`, no payment step):
-`pnpm audit:batch -- --from-examples --model claude-opus-5 --scope program`; `--head` for
-the default-branch HEAD, `--dry-run`, `--only kamino`. Both audits of a commit stay visible
-on its report page.
-Secrets live in `.env` (gitignored). To run a real audit you need `ANTHROPIC_API_KEY`
-there; to enqueue without paying use the operator button on the job page with `ADMIN_TOKEN`.
+## How the site runs an audit
 
----
+```
+browser ─ paste link ─▶ Vercel (apps/web)
+                          │ sizes the repo via the GitHub tree API, estimates the cost per model
+                          │ checks your key with one free call, encrypts it (AES-256-GCM), queues the job
+                          └─ workflow_dispatch ─▶ GitHub Actions (.github/workflows/audit.yml)
+                                                   │ scripts/ci-audit.ts on a disposable machine:
+                                                   │ claims the job, wipes the stored key, clones the commit
+                                                   │ runs the corpus with Claude Code, single agent, read-only tools
+                                                   │ parses the report, attests on devnet, writes the database
+                                                   └─ commits reports/<owner>/<repo>/<sha>/… back here
+```
 
-Paste a public GitHub link, get a price quote, pay in USDC on Solana mainnet, and an AI
-security audit runs against the repository using the open-source
-[auditor-skill](https://github.com/solanabr/auditor-skill) corpus. The result is a
-report (private, or public with disclosure rules enforced in code) plus an on-chain
-attestation that binds repo, commit, corpus version, model, report hash, severity
-counts and timestamp, signed by the service key.
+- **Estimate.** Fitted on our own runs: a large fixed part (the corpus walk) plus a gentle
+  slope per line, times a 1.4 safety factor. Every calibration run lands under it. See
+  [docs/calibration.md](docs/calibration.md).
+- **Your key.** Spend limits in the Anthropic Console are per workspace, so the site walks
+  you through: new workspace → monthly limit = estimate + 20% → one key in it → paste →
+  delete the key when the report is ready. The key is encrypted at rest, decrypted in
+  memory by the runner, wiped from the database before the model starts, never logged.
+- **The runner.** A fresh GitHub Actions VM. The audited repository is never built or
+  executed; Bash is limited to read-only inspection; `Task`/`Agent`/web tools are
+  disallowed. The corpus's own prompt treats the repository as untrusted input.
+- **Attestation.** `programs/audit_attest` on Solana devnet, program id
+  `sXtvdoheTtFBukx8vCppJHhiiJHW2xa3xc5KaPAhzkC`. One account per (repository, commit),
+  address derived from `sha256(lowercased url)` and the commit bytes, written only by the
+  attester key. You need no wallet and no SOL.
+- **Disclosure.** Public reports list under Audits; Critical/High details are redacted for
+  90 days unless a maintainer asks for earlier disclosure (open an issue here). Private
+  reports are reachable only with the token in the link. Counts are always visible.
+  Enforced in `packages/report/src/visibility.ts`.
 
-The corpus is consumed as a pinned git submodule (`vendor/auditor-skill` @ `6bb2cbf`,
-version string `7.3.0@6bb2cbf`). Nothing in it is edited or copied. This repository owns
-only the web app, the job runner, pricing, payments, attestation, storage, and the prompt
-layer that drives the auditor.
+Deployment (Vercel + Neon + GitHub Actions, all free tiers, no server):
+[docs/deploy.md](docs/deploy.md).
 
 ## Layout
 
 ```
-apps/web                Next.js (App Router, server components, Tailwind)
-apps/worker             job runner: quotes, sandbox orchestration, ingest
-apps/worker/prompts     the prompt layer (system append + turn prompts)
-programs/audit_attest   Anchor program (Phase 2)
+apps/web                Next.js site (App Router, server components, Tailwind)
+apps/worker             local job runner (Docker sandbox) used by pnpm dev; the site uses Actions instead
+programs/audit_attest   Anchor program (attest / reattest / set_visibility)
 packages/db             Prisma schema + client
-packages/pricing        quote engine (tokei + COSTS.md formula + config/models.json)
+packages/pricing        estimate engine (calibrated single-agent profile, config/models.json)
 packages/report         report parser → counts/findings, redaction, disclosure rules
-packages/attest         client for the Anchor program + arg encoding
-sandbox/Dockerfile      ephemeral job container image
-sandbox/runner          runs inside the container (Claude Agent SDK + auditor plugin)
-sandbox/egress-proxy    allowlist-only CONNECT proxy (api.anthropic.com only)
+packages/attest         client for the program + arg encoding
+sandbox/                container image, in-container runner and egress proxy (local worker only)
 vendor/auditor-skill    git submodule, pinned, read-only
-reports/                local report store (see reports/README.md)
+reports/                every report the site shows, committed (see reports/README.md)
 config/models.json      model ids + prices (hand-maintained)
-scripts/                ingest-report.ts, refund.ts, check-secrets.sh
-docs/                   phase notes, roadmap, upstream wishlist, self-audit
+scripts/                ci-audit.ts (Actions runner), audit-local.sh, ingest, unpublish, freshness…
+.github/workflows       audit.yml
+docs/                   deploy, calibration, design review, phase notes (history), roadmap
 ```
 
-## Requirements
-
-- Linux filesystem (WSL2 is fine). Never run this from `/mnt/c`.
-- node ≥ 20, pnpm 10, git, `tokei` (`cargo install tokei --locked`).
-- Docker Engine with the compose plugin. On Ubuntu/WSL:
-  ```bash
-  sudo apt-get update && sudo apt-get install -y ca-certificates curl
-  sudo install -m 0755 -d /etc/apt/keyrings
-  sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
-  echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu noble stable" | sudo tee /etc/apt/sources.list.d/docker.list >/dev/null
-  sudo apt-get update && sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-  sudo usermod -aG docker $USER
-  printf '[boot]\nsystemd=true\n' | sudo tee -a /etc/wsl.conf   # then: wsl --shutdown from Windows
-  ```
-- For Phase 2: rustc/cargo, solana-cli, anchor-cli.
-
-## Quick start (local)
+## Operator commands
 
 ```bash
-git clone --recurse-submodules <this repo> && cd auditor-site
-pnpm hooks:install                 # pre-commit secret scan + submodule guard
-cp .env.example .env               # fill in the values (see below)
-bash scripts/dev-up.sh             # postgres, migrations, sandbox images, build, tests
-pnpm dev:worker                    # terminal 1
-pnpm dev:web                       # terminal 2 → http://localhost:3000
+pnpm audit:local -- Kamino/klend [--scope program|full] [--model opus] [--ingest]   # one local audit
+pnpm audit:all                                   # every clone not yet audited with the current corpus
+pnpm ingest:examples -- [--attest] [--dry-run]   # publish the hand-run audits (local DB, or DATABASE_URL=<neon>)
+pnpm unpublish owner/repo --reason "…"           # take a repository off the site (on-chain stays)
+pnpm check:freshness                             # archived? last push? how far behind HEAD is what we audited?
+pnpm db:deploy:prod                              # apply migrations to PROD_DATABASE_URL
+pnpm check:secrets                               # the pre-commit scan, on the whole tree
 ```
 
-Zero-cost checks: `pnpm exec tsx scripts/smoke-local.ts <github url> --keep` (quote a
-repo), `pnpm exec tsx scripts/sandbox-smoke.ts` (run the sandbox with a dummy key).
-
-Minimum `.env` for a local end-to-end run: `DATABASE_URL`, `ANTHROPIC_API_KEY` (standard
-tier), `ADMIN_TOKEN` (to enqueue without paying), `BYOK_KEK` (if you want the BYOK tier).
-Payment and attestation need `RPC_URL`, `TREASURY_PUBKEY`, `ATTESTER_KEYPAIR_PATH`,
-`AUDIT_ATTEST_PROGRAM_ID` (Phase 2). Every variable is documented in `.env.example`.
-
-## How a job flows
-
-1. `/` → paste URL → `Job{status: quoting}`.
-2. Worker: resolve commit, shallow clone, `tokei`, detect scope, price for every enabled
-   model, store `Quote`, `status: quoted`.
-3. `/q/<id>` shows the free tier (stats + which checklists/vectors would load) and the
-   estimate per model. Choose tier / model / disclosure.
-4. Standard or BYOK → `awaiting_payment` with a `Payment{memo: jobId}`. Pay USDC on
-   mainnet with the memo (Phase 2 automates the watch) or use the operator "Enqueue now".
-5. Worker: shallow clone at the pinned commit, mount it read-only into an ephemeral
-   container on an internal network whose only exit is the egress proxy
-   (`api.anthropic.com:443`). The runner drives `/auditor:intake --auto` then
-   `/auditor:audit-cycle` through the Claude Agent SDK with a hard USD budget.
-6. Ingest: `report.md` byte-for-byte, `meta.json`, DB row, then attestation.
-7. `/r/<owner>/<repo>/<sha>` renders the report with disclosure rules applied.
-
-## Disclosure rules (enforced in `packages/report/src/visibility.ts`)
-
-- `private`: reachable only with the access token in the link.
-- `public` + verified maintainer: everything visible.
-- `public` + unverified: Critical and High findings redacted until the maintainer
-  acknowledges or 90 days pass. Severity counts always visible.
-- On-chain: hashes and counts only, never finding text.
-
-## Sandbox guarantees
-
-Read-only target mount, read-only corpus mount, tmpfs workspace, `--read-only` root,
-`--cap-drop ALL`, `no-new-privileges`, pids/memory/cpu limits, non-root user, no
-compilers or package managers in the image, tool denials for build/network commands, and
-an internal Docker network whose only route out is the allowlist proxy. The API key is
-delivered over stdin as part of the job spec and never written to disk or logs.
-
-## Manual ingest
-
-```bash
-pnpm ingest path/to/REPORT.md --repo https://github.com/owner/repo --commit <40-hex sha> \
-  --model claude-opus-5 [--visibility public] [--verified] [--attest] [--run-json run.json]
-```
+`pnpm hooks:install` enables the pre-commit hook (secret scan + submodule guard).
 
 ## Security notes
 
-- Secrets never enter git: `.env` is ignored; keypairs live outside the repo; the
-  pre-commit hook scans staged content.
-- The audited repository is untrusted input for the LLM too. The prompt layer says so
-  explicitly and the sandbox makes it structurally true.
-- Mainnet only. `CLUSTER` other than `mainnet-beta` makes the worker refuse to start.
-
-See `docs/phase-*.md` for what each phase built and left out, `docs/roadmap.md` for what
-is intentionally not built, and `docs/upstream-wishlist.md` for corpus requests.
+- Secrets never enter git: `.env` is ignored, keypairs live outside the repo, the
+  pre-commit hook scans staged content, every runner log line is scrubbed of key shapes.
+- The audited repository is untrusted input for the model too. The prompt says so and the
+  tool allowlist makes it structurally true: nothing from it is executed.
+- The site runs on devnet. The program and the client are cluster-agnostic; a mainnet
+  deployment is a config change plus a funded deploy wallet.
+- `docs/phase-*.md` describe the original build (USDC payments, Docker worker, GitHub
+  OAuth) and are kept as history; the pivot to BYOK + GitHub Actions is dated 2026-10-09.

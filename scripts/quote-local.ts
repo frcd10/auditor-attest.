@@ -45,7 +45,7 @@ async function main() {
     const scopeName = (arg("scope") ?? "full") as "full" | "program";
     const rows = enabledModels(cfg).map((m) => {
       const e = estimate({ loc: tokei.loc, languages: tokei.languages, markers, scope: scopeName, model: m.id, models: cfg });
-      return { model: m.id, inputTokens: e.tokens.inputTotal, outputTokens: e.tokens.output, rawCostUsd: +e.rawCostUsd.toFixed(4), estCostUsd: +e.estCostUsd.toFixed(4), budgetUsd: budgetFor(e), priceUsdc: e.priceUsdc, byokFeeUsdc: e.attestFeeUsdc, scope: e.scope };
+      return { model: m.id, inputTokens: e.tokens.inputTotal, outputTokens: e.tokens.output, rawCostUsd: +e.rawCostUsd.toFixed(4), estCostUsd: +e.estCostUsd.toFixed(4), budgetUsd: budgetFor(e), suggestedLimitUsd: e.suggestedLimitUsd, scope: e.scope };
     });
     const out = { repo: gh?.url ?? resolve(dir), commit: sha, auditScope: scopeName, loc: tokei.loc, totalLoc: tokei.totalLoc, files: tokei.files, languages: tokei.languages, excluded: tokei.excluded, markers, scope: rows[0]?.scope, tokens: rows.length ? { ...estimate({ loc: tokei.loc, languages: tokei.languages, markers, scope: scopeName, model: rows[0]!.model, models: cfg }).tokens } : null, models: rows.map(({ scope: _s, ...r }) => r) };
     if (process.argv.includes("--json")) {

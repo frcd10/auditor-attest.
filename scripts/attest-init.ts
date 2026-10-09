@@ -3,12 +3,12 @@
  * One-time: initialise the audit_attest Config PDA after `anchor deploy`, or rotate the
  * attester. Signs with the program's upgrade authority (the deploy wallet).
  *
- *   pnpm exec tsx scripts/attest-init.ts init   --authority ~/.config/solana/id_mainnet.json
- *   pnpm exec tsx scripts/attest-init.ts rotate --authority ~/.config/solana/id_mainnet.json --attester <pubkey>
+ *   pnpm exec tsx scripts/attest-init.ts init   --authority ~/.config/solana/id_mainnet.json   # the deploy wallet
+ *   pnpm exec tsx scripts/attest-init.ts rotate --authority ~/.config/solana/id_mainnet.json   # the deploy wallet --attester <pubkey>
  *   pnpm exec tsx scripts/attest-init.ts show
  *
  * Uses AUDIT_ATTEST_PROGRAM_ID, ATTESTER_KEYPAIR_PATH, RPC_URL from .env.
- * This sends a real mainnet transaction: run only after the operator approved it.
+ * Sends a transaction on the cluster RPC_URL points at (devnet in the current setup).
  */
 import { resolve } from "node:path";
 import { config as loadDotenv } from "dotenv";
@@ -28,7 +28,6 @@ async function main() {
   const rpc = process.env.RPC_URL;
   const pid = process.env.AUDIT_ATTEST_PROGRAM_ID;
   if (!rpc || !pid) throw new Error("RPC_URL and AUDIT_ATTEST_PROGRAM_ID must be set in .env");
-  if ((process.env.CLUSTER ?? "mainnet-beta") !== "mainnet-beta") throw new Error("mainnet only");
   const connection = new Connection(rpc, "confirmed");
   const programId = new PublicKey(pid);
   const [config] = deriveConfigPda(programId);

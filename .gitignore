@@ -20,10 +20,10 @@ id.json
 id_*.json
 secrets/
 
-# local report store is data, not code (public reports are served from disk)
-reports/**
-!reports/.gitkeep
-!reports/README.md
+# reports/ IS committed: every report the site shows lives in git (the Actions runner
+# pushes new ones). Only scratch files inside a report dir are ignored.
+reports/**/run.json
+reports/**/artifacts/
 
 # worker scratch
 .jobs/
