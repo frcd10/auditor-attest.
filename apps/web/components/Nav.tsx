@@ -3,9 +3,9 @@ import { siteRepoUrl } from "@/lib/env";
 
 export function Logo() {
   return (
-    <Link href="/" className="flex items-center gap-2 font-semibold tracking-tight">
-      <span className="inline-block h-5 w-5 rounded-md" style={{ background: "var(--gradient)" }} />
-      <span>Auditor Attest</span>
+    <Link href="/" className="flex items-center" aria-label="Auditor Dog, home">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/brand/auditor-dog-horizontal-white.svg" alt="Auditor Dog" className="h-8 w-auto" />
     </Link>
   );
 }

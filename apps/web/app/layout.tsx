@@ -7,7 +7,8 @@ import "./globals.css";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 
 export const metadata: Metadata = {
-  title: { default: "Auditor Attest", template: "%s · Auditor Attest" },
+  title: { default: "Auditor Dog", template: "%s · Auditor Dog" },
+  icons: { icon: "/brand/auditor-dog-symbol-white.svg" },
   description: "Open-source, free AI security audits for Solana repositories on your own model key, attested on-chain. A public good.",
 };
 
