@@ -49,9 +49,9 @@ export default async function ExplorePage({ searchParams }: { searchParams: Prom
     <div className="container-x space-y-8 pt-14 pb-8">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="h-section text-4xl sm:text-5xl">Audits</h1>
+          <h1 className="h-section text-4xl sm:text-5xl">Reports</h1>
           <p className="mt-3 max-w-2xl text-[var(--muted)]">
-            Every public report, newest first. Private reports are never listed. A report marked <em>redacted</em> hides Critical and High details until the maintainer acknowledges it or 90 days pass; counts are always exact.
+            Every public report, newest first, with full finding text. Private reports are never listed. Severity counts match the on-chain attestation.
           </p>
         </div>
         <div className="text-sm text-[var(--muted)]">{total} public report{total === 1 ? "" : "s"}</div>
@@ -111,7 +111,7 @@ export default async function ExplorePage({ searchParams }: { searchParams: Prom
                 <div className="mt-3 flex flex-wrap gap-x-3 text-xs text-[var(--dim)]">
                   <span className="mono">{r.model}</span>
                   <span>{when(r.finishedAt ?? r.createdAt)}</span>
-                  <span>{vis === "public_redacted" ? "redacted" : "full disclosure"}</span>
+                  {vis === "public_redacted" && <span>redacted</span>}
                   {r.attestation && <span className="text-[var(--green)]">attested ✓</span>}
                 </div>
               </Link>
@@ -121,7 +121,7 @@ export default async function ExplorePage({ searchParams }: { searchParams: Prom
       </ul>
       <div className="flex gap-3 text-sm">
         {page > 1 && <Link href={qs({ page: String(page - 1) })} className="btn btn-outline btn-sm">← Previous</Link>}
-        {hasNext && <Link href={qs({ page: String(page + 1) })} className="btn btn-outline btn-sm">Next →</Link>}
+        {hasNext && <Link href={qs({ page: String(page + 1) })} className="btn btn-outline btn-sm">Next</Link>}
       </div>
     </div>
   );

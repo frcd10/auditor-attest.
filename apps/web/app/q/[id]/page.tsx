@@ -78,7 +78,7 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
         {LIVE.has(job.status) && (
           <p className="mt-4 text-sm text-[var(--muted)]">
             This page refreshes itself while the job is running. The audit takes {chosen ? `${chosen.typicalMinutes[0]}–${chosen.typicalMinutes[1]}` : "15–25"} minutes.
-            {" "}You can also watch the runner on <a href={actionsUrl()} target="_blank" rel="noreferrer" className="underline">GitHub Actions ↗</a>.
+            {" "}You can also watch the runner on <a href={actionsUrl()} target="_blank" rel="noreferrer" className="underline">GitHub Actions</a>.
           </p>
         )}
       </section>
@@ -99,13 +99,13 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
               </p>
               <p className="mt-2 text-xs text-[var(--high)]">Now delete the API key you used for this audit in the Anthropic Console. It has done its job.</p>
             </div>
-            <Link href={reportHref} className="btn btn-accent">Open report →</Link>
+            <Link href={reportHref} className="btn btn-accent">Open report</Link>
           </div>
         </section>
       )}
       {["failed", "failed_budget"].includes(job.status) && (
         <section className="card p-6 text-sm text-[var(--muted)]">
-          The run did not produce a report. Nothing was charged by us; whatever the model consumed shows in your Anthropic Console. Delete the key you used, then submit the repository again (a new key, same limit) or <a href={`${siteRepoUrl()}/issues`} target="_blank" rel="noreferrer" className="underline">open an issue ↗</a> with this job id: <span className="mono">{job.id}</span>.
+          The run did not produce a report. Nothing was charged by us; whatever the model consumed shows in your Anthropic Console. Delete the key you used, then submit the repository again (a new key, same limit) or <a href={`${siteRepoUrl()}/issues`} target="_blank" rel="noreferrer" className="underline">open an issue</a> with this job id: <span className="mono">{job.id}</span>.
         </section>
       )}
 
@@ -179,7 +179,7 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
             <h2 className="text-lg font-semibold">Estimated cost on your key</h2>
             <p className="mt-1 text-xs text-[var(--muted)]">
               We charge nothing. The model is billed to your Anthropic account at list prices. The figures below are upper bounds for a normal run
-              (fitted on our own audits with a {Number(q.calibration)}× safety factor, see <a href={`${siteRepoUrl()}/blob/main/docs/calibration.md`} target="_blank" rel="noreferrer" className="underline">docs/calibration.md ↗</a>).
+              (fitted on our own audits with a {Number(q.calibration)}× safety factor, see <a href={`${siteRepoUrl()}/blob/main/docs/calibration.md`} target="_blank" rel="noreferrer" className="underline">docs/calibration.md</a>).
             </p>
             <div className="mt-3 overflow-x-auto">
               <table className="table">
@@ -222,7 +222,7 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
               </p>
               <ol className="mt-4 list-decimal space-y-2 pl-5 text-sm">
                 <li>
-                  Open <a href="https://platform.claude.com/settings/workspaces" target="_blank" rel="noreferrer" className="underline">Console → Settings → Workspaces ↗</a> and click <b>Create workspace</b>. Name it something like <span className="mono">audit-{job.repo}</span>.
+                  Open <a href="https://platform.claude.com/settings/workspaces" target="_blank" rel="noreferrer" className="underline">Console → Settings → Workspaces</a> and click <b>Create workspace</b>. Name it something like <span className="mono">audit-{job.repo}</span>.
                 </li>
                 <li>
                   In that workspace, open <b>Limits</b> and set the <b>monthly spend limit</b> to{" "}
@@ -230,7 +230,7 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
                   {" "}(the estimate plus {headroomPct}% headroom). If the limit is hit, the run stops and you get no report, so do not go lower.
                 </li>
                 <li>
-                  Open <a href="https://platform.claude.com/settings/keys" target="_blank" rel="noreferrer" className="underline">API keys ↗</a>, click <b>Create key</b>, pick the new workspace, copy the key.
+                  Open <a href="https://platform.claude.com/settings/keys" target="_blank" rel="noreferrer" className="underline">API keys</a>, click <b>Create key</b>, pick the new workspace, copy the key.
                 </li>
                 <li>Paste it below. We encrypt it at rest, the runner decrypts it in memory, wipes the stored copy before the model starts, and never logs it.</li>
                 <li>
@@ -269,18 +269,18 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
                     <legend className="font-semibold">Disclosure</legend>
                     <label className="flex items-start gap-3 rounded-xl border border-[var(--border)] p-3">
                       <input type="radio" name="visibility" value="public" defaultChecked={job.visibility === "public"} className="mt-1" />
-                      <span><b>Public</b> · listed under Audits. Critical/High details stay redacted for 90 days unless the maintainers ask us to publish them sooner. Counts are always visible.</span>
+                      <span><b>Public</b>. Listed under Audits with the full report, Critical and High included. Use this for code that is already deployed and public.</span>
                     </label>
                     <label className="flex items-start gap-3 rounded-xl border border-[var(--border)] p-3">
                       <input type="radio" name="visibility" value="private" defaultChecked={job.visibility === "private"} className="mt-1" />
-                      <span><b>Private</b> · only you get the link. The attestation (hashes + counts) still goes on {clusterLabel()}, and the report file is committed to our public repository under its token path.</span>
+                      <span><b>Private</b>. Only you get the link. The attestation (hashes and counts, no finding text) still goes on {clusterLabel()}. The report file is committed to our public repository under a path only the link reveals.</span>
                     </label>
                   </fieldset>
                   <label className="flex items-start gap-3 rounded-xl border border-[var(--border)] p-3">
                     <input type="checkbox" name="confirm" required className="mt-1" />
                     <span>I created a dedicated key in a workspace with a spend limit, and I will delete it when the audit is done.</span>
                   </label>
-                  <button type="submit" className="btn btn-accent">Start the audit →</button>
+                  <button type="submit" className="btn btn-accent">Start the audit</button>
                 </div>
               </form>
             </section>

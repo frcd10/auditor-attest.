@@ -71,8 +71,7 @@ export default async function ReportPage({ params, searchParams }: { params: Pro
 
       {redacted && (
         <div className="rounded-2xl border border-[var(--high)] bg-[#2a1f12] p-4 text-sm">
-          <b>Critical and High findings are withheld.</b> This report was not submitted by a verified maintainer. They become visible on {row.redactUntil ? row.redactUntil.toISOString().slice(0, 10) : "the disclosure date"}. The counts above are exact and match the on-chain attestation.
-          {" "}Maintainers who want the full text sooner: <a href={`${siteRepoUrl()}/issues/new?title=${encodeURIComponent(`Disclosure request: ${row.owner}/${row.repo}@${shortSha(row.commit)}`)}`} target="_blank" rel="noreferrer" className="font-semibold underline">open an issue from the repository&apos;s org ↗</a>.
+          <b>Critical and High findings are withheld</b> until {row.redactUntil ? row.redactUntil.toISOString().slice(0, 10) : "the disclosure date"}. The counts above are exact and match the on-chain attestation.
         </div>
       )}
 
@@ -92,7 +91,7 @@ export default async function ReportPage({ params, searchParams }: { params: Pro
             {visibility !== "private" && (
               <>
                 <dt className="text-[var(--muted)]">Source file</dt>
-                <dd className="break-all"><a href={sourceUrl} target="_blank" rel="noreferrer" className="text-[var(--green)]">{siteRepo()}/reports/… ↗</a></dd>
+                <dd className="break-all"><a href={sourceUrl} target="_blank" rel="noreferrer" className="text-[var(--green)]">{siteRepo()}/reports/…</a></dd>
               </>
             )}
           </dl>

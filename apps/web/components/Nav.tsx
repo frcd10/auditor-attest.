@@ -16,13 +16,13 @@ export function Nav() {
       <div className="container-x flex h-16 items-center justify-between gap-6">
         <Logo />
         <nav className="hidden items-center gap-7 text-sm text-[var(--muted)] md:flex">
-          <Link href="/explore" className="hover:text-white">Audits</Link>
+          <Link href="/explore" className="hover:text-white">Reports</Link>
           <Link href="/stats" className="hover:text-white">Stats</Link>
-          <Link href="/#ways" className="hover:text-white">Ways to use</Link>
+          <Link href="/#ways" className="hover:text-white">Run it yourself</Link>
           <Link href="/#how" className="hover:text-white">How it works</Link>
-          <a href={siteRepoUrl()} target="_blank" rel="noreferrer" className="hover:text-white">Source ↗</a>
+          <a href={siteRepoUrl()} target="_blank" rel="noreferrer" className="hover:text-white">Source</a>
         </nav>
-        <Link href="/#start" className="btn btn-primary btn-sm">Start an audit</Link>
+        <Link href="/#start" className="btn btn-primary btn-sm">Submit a repository</Link>
       </div>
     </header>
   );

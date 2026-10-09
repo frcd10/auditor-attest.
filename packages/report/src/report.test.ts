@@ -162,9 +162,12 @@ describe("effective visibility", () => {
     const created = new Date("2026-09-01T00:00:00Z");
     const until = redactUntilFor(created);
     expect(until.toISOString()).toBe("2026-11-30T00:00:00.000Z");
+    expect(effectiveVisibility({ visibility: "public", submitterVerified: false, redactUntil: until }, now)).toBe("public");
+    process.env.REDACT_PUBLIC = "1";
     expect(effectiveVisibility({ visibility: "public", submitterVerified: false, redactUntil: until }, now)).toBe("public_redacted");
     expect(effectiveVisibility({ visibility: "public", submitterVerified: false, redactUntil: until }, new Date("2026-11-30T00:00:01Z"))).toBe("public");
     expect(effectiveVisibility({ visibility: "public", submitterVerified: false, redactUntil: until, maintainerAckAt: new Date("2026-09-05") }, now)).toBe("public");
+    delete process.env.REDACT_PUBLIC;
   });
 });
 

@@ -9,7 +9,7 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "sw
 export const metadata: Metadata = {
   title: { default: "Auditor Dog", template: "%s · Auditor Dog" },
   icons: { icon: "/brand/auditor-dog-symbol-white.svg" },
-  description: "Open-source, free AI security audits for Solana repositories on your own model key, attested on-chain. A public good.",
+  description: "Open-source security audits for Solana programs on the auditor-skill corpus, run on your own model key, with the report hash and severity counts recorded on Solana.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

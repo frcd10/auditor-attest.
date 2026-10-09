@@ -5,7 +5,7 @@ import { RecentJobs } from "@/components/RecentJobs";
 import { SeverityBadges } from "@/components/SeverityBadges";
 import { StatTile } from "@/components/StatTile";
 import { prisma } from "@/lib/db";
-import { clusterLabel, siteRepo, siteRepoUrl } from "@/lib/env";
+import { attestProgramId, clusterLabel, corpusVersion, siteRepo, siteRepoUrl } from "@/lib/env";
 import { int, shortSha, when } from "@/lib/format";
 import { createJob } from "./actions";
 
@@ -38,6 +38,7 @@ export default async function Home() {
   const models = enabledModels(loadModels());
   const repo = siteRepo();
   const repoUrl = siteRepoUrl();
+  const programId = attestProgramId() ?? "sXtvdoheTtFBukx8vCppJHhiiJHW2xa3xc5KaPAhzkC";
 
   return (
     <div className="space-y-24 pb-8">
@@ -45,22 +46,18 @@ export default async function Home() {
       <section className="relative overflow-hidden">
         <div className="glow" />
         <div className="container-x relative pt-20 pb-10 sm:pt-28">
-          <div className="eyebrow">
-            <span className="inline-block h-1.5 w-1.5 rounded-full bg-[var(--green)]" />
-            A public good · 100% open source · free to use, you pay only your own model usage
-          </div>
-          <h1 className="h-display mt-6 max-w-4xl text-5xl sm:text-6xl lg:text-7xl">
-            <span className="gradient-text">Verifiable</span> security audits for every Solana repo.
+          <h1 className="h-display mt-2 max-w-4xl text-5xl sm:text-6xl lg:text-7xl">
+            Security audits for Solana programs, with a record on-chain.
           </h1>
           <p className="mt-6 max-w-2xl text-lg text-[var(--muted)]">
-            Paste a GitHub link. An AI auditor walks the open-source auditor-skill corpus (20 checklists, 1,413 items, 136 known attack vectors) against the code, on your own Anthropic key. You get a report, the repository gets a hash on {clusterLabel()} that anyone can verify.
+            Auditor Dog runs the open-source auditor-skill corpus against a public GitHub repository: 20 checklists, 1,413 items and 136 known attack vectors, applied by a single model session with read-only tools. The report is published in full, and its hash, the commit, the corpus version, the model and the severity counts are written to a Solana account anyone can read.
           </p>
           <form id="start" action={createJob} className="mt-10 flex max-w-2xl flex-col gap-3 sm:flex-row">
             <input name="url" type="url" required placeholder="https://github.com/owner/repo" className="input mono flex-1 text-sm" />
-            <button type="submit" className="btn btn-accent">Estimate the cost →</button>
+            <button type="submit" className="btn btn-accent">Estimate the cost</button>
           </form>
           <p className="mt-3 text-xs text-[var(--dim)]">
-            Public repositories. The estimate is instant and free. Add <span className="mono">/tree/&lt;branch-or-sha&gt;</span> to pin a ref.
+            Public repositories only. The estimate is free. Append <span className="mono">/tree/&lt;branch-or-sha&gt;</span> to pin a ref. Runs on your own Anthropic API key; we charge nothing.
           </p>
         </div>
       </section>
@@ -72,83 +69,46 @@ export default async function Home() {
         <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
           <StatTile label="Repositories audited" value={int(s?.repos ?? 0)} />
           <StatTile label={`Attested on ${clusterLabel()}`} value={int(s?.attested ?? 0)} />
-          <StatTile label="Critical found" value={int(s?.critical ?? 0)} accent="critical" />
-          <StatTile label="High found" value={int(s?.high ?? 0)} accent="high" />
+          <StatTile label="Critical findings" value={int(s?.critical ?? 0)} accent="critical" />
+          <StatTile label="High findings" value={int(s?.high ?? 0)} accent="high" />
         </div>
         <div className="mt-3 text-right text-sm">
-          <Link href="/stats" className="text-[var(--muted)] hover:text-white">All stats →</Link>
+          <Link href="/stats" className="text-[var(--muted)] hover:text-white">All stats</Link>
         </div>
       </section>
 
-      {/* Three ways to use it */}
-      <section id="ways" className="container-x scroll-mt-24">
-        <h2 className="h-section text-3xl sm:text-4xl">Three ways to use it</h2>
-        <p className="mt-3 max-w-2xl text-[var(--muted)]">Same corpus, same report format. Pick the one that fits how you work. Nothing here costs anything beyond the tokens your own account spends.</p>
-        <div className="mt-8 grid gap-4 md:grid-cols-3">
-          <div className="card card-gradient p-6">
-            <div className="text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">1 · This site</div>
-            <div className="mt-2 text-2xl font-bold">Paste a link</div>
-            <p className="mt-3 text-sm text-[var(--muted)]">
-              Get an estimate, create a throwaway API key with a spend limit, paste it, and the audit runs on a disposable GitHub Actions machine. The report is committed to our public repository and attested on {clusterLabel()}.
-            </p>
-            <Link href="/#start" className="btn btn-outline btn-sm mt-4">Start →</Link>
-          </div>
-          <div className="card p-6">
-            <div className="text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">2 · Inside Claude Code</div>
-            <div className="mt-2 text-2xl font-bold">Install the corpus as a plugin</div>
-            <p className="mt-3 text-sm text-[var(--muted)]">
-              The auditor-skill corpus is a Claude Code plugin. Open your Solana repository in Claude Code, load the plugin and run the audit in your own environment, with your own subscription or key. No upload, no middleman.
-            </p>
-            <pre className="mono mt-4 overflow-x-auto rounded-xl border border-[var(--border)] bg-black/40 p-3 text-xs">{`git clone https://github.com/solanabr/auditor-skill
-claude --plugin-dir ./auditor-skill
-> /auditor:audit --scope program`}</pre>
-            <a href="https://github.com/solanabr/auditor-skill" target="_blank" rel="noreferrer" className="btn btn-outline btn-sm mt-4">auditor-skill ↗</a>
-          </div>
-          <div className="card p-6">
-            <div className="text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">3 · Clone this site</div>
-            <div className="mt-2 text-2xl font-bold">Run the whole thing yourself</div>
-            <p className="mt-3 text-sm text-[var(--muted)]">
-              Everything on this page, the runner, the attestation program and the report pipeline are in one repository under an open license. One command brings it up locally; the same audit then runs on your machine.
-            </p>
-            <pre className="mono mt-4 overflow-x-auto rounded-xl border border-[var(--border)] bg-black/40 p-3 text-xs">{`git clone --recurse-submodules ${repoUrl}
-cd ${repo.split("/")[1]} && pnpm dev
-pnpm audit:local -- Org/repo`}</pre>
-            <a href={repoUrl} target="_blank" rel="noreferrer" className="btn btn-outline btn-sm mt-4">Source ↗</a>
-          </div>
-        </div>
-      </section>
-
-      {/* How it works */}
+      {/* What you get */}
       <section id="how" className="container-x scroll-mt-24">
-        <h2 className="h-section text-3xl sm:text-4xl">How the site runs an audit</h2>
-        <p className="mt-3 max-w-2xl text-[var(--muted)]">Four steps from a link to an on-chain attestation. Every step is visible on your job page and in the public Actions log.</p>
-        <div className="mt-8 grid gap-4 md:grid-cols-4">
+        <h2 className="h-section text-3xl sm:text-4xl">What happens when you submit a repository</h2>
+        <div className="mt-8 grid gap-4 md:grid-cols-2">
           {[
-            ["1", "Estimate", "We size the repository through the GitHub API (no clone) and show the expected cost per model, fitted on our own runs with a safety factor on top."],
-            ["2", "Your key", "You create a workspace with a spend limit and one key in it, paste the key, and pick the model and disclosure. We check the key with one free call and encrypt it."],
-            ["3", "Disposable runner", "A fresh GitHub Actions machine clones the commit, runs the corpus with Claude Code in single-agent mode, read-only tools, nothing from the repository executed. The key never touches a log."],
-            ["4", "Report + attestation", `The report is committed to our public repository byte-for-byte. Its hash, the commit, corpus version, model and severity counts are written to an account on ${clusterLabel()} signed by our attester key.`],
-          ].map(([n, title, body]) => (
-            <div key={n} className="card p-6">
-              <div className="gradient-text text-3xl font-bold">{n}</div>
-              <div className="mt-3 text-lg font-semibold">{title}</div>
+            ["Estimate", "The repository is sized through the GitHub API, without cloning. You see the expected model cost for each supported model before anything runs. The figure is an upper bound fitted on our own audits, with a 1.4× safety factor; the calibration data is in the repository."],
+            ["Your key, your bill", "You create a dedicated key in an Anthropic workspace with a spend limit (the page tells you the number) and paste it. We verify it with one free API call, encrypt it, and wipe it the moment the run starts. The model usage is billed by Anthropic to you. We have no fees."],
+            ["A disposable machine", "The audit runs on a fresh GitHub Actions runner in our public repository. It clones the exact commit, loads the corpus as a Claude Code plugin and walks it in one linear session: Read, Grep and read-only shell commands only, no subagents, nothing from the audited repository is ever built or executed. The run log is public."],
+            ["Report and attestation", `The report is committed to our repository byte-for-byte and rendered here. The attester key writes one account per (repository, commit) on ${clusterLabel()}: repository hash, commit, corpus version, model, report sha256, severity counts and timestamp. The address derives from the URL and the commit, so no database is needed to find it.`],
+          ].map(([title, body]) => (
+            <div key={title} className="card p-6">
+              <div className="text-lg font-semibold">{title}</div>
               <p className="mt-2 text-sm text-[var(--muted)]">{body}</p>
             </div>
           ))}
         </div>
+        <p className="mt-6 max-w-3xl text-sm text-[var(--muted)]">
+          This is a thorough first pass by a model, produced in 15 to 25 minutes. It is not a substitute for a human audit, and an attestation is a record that a given report was produced for a given commit, not a statement that the code is safe.
+        </p>
       </section>
 
       {/* Recent audits */}
       <section className="container-x">
         <div className="flex items-end justify-between gap-4">
           <div>
-            <h2 className="h-section text-3xl sm:text-4xl">Latest public audits</h2>
-            <p className="mt-3 text-[var(--muted)]">Public reports are indexable pages. Private reports never appear here.</p>
+            <h2 className="h-section text-3xl sm:text-4xl">Published reports</h2>
+            <p className="mt-3 text-[var(--muted)]">Full text, Critical findings included. Private reports are never listed.</p>
           </div>
-          <Link href="/explore" className="btn btn-outline btn-sm">All audits →</Link>
+          <Link href="/explore" className="btn btn-outline btn-sm">All reports</Link>
         </div>
         {latest.length === 0 ? (
-          <div className="card mt-8 p-8 text-center text-[var(--muted)]">No public audits yet. Yours could be the first.</div>
+          <div className="card mt-8 p-8 text-center text-[var(--muted)]">No public reports yet.</div>
         ) : (
           <ul className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {latest.map((r) => (
@@ -162,7 +122,7 @@ pnpm audit:local -- Org/repo`}</pre>
                     <SeverityBadges size="sm" counts={{ critical: r.critical, high: r.high, medium: r.medium, low: r.low, info: r.info }} />
                   </div>
                   <div className="mt-3 text-xs text-[var(--dim)]">
-                    {r.model} · {when(r.finishedAt ?? r.createdAt)}{r.attestation ? " · attested ✓" : ""}
+                    {r.model} · {when(r.finishedAt ?? r.createdAt)}{r.attestation ? " · attested" : ""}
                   </div>
                 </Link>
               </li>
@@ -171,44 +131,67 @@ pnpm audit:local -- Org/repo`}</pre>
         )}
       </section>
 
+      {/* Three ways */}
+      <section id="ways" className="container-x scroll-mt-24">
+        <h2 className="h-section text-3xl sm:text-4xl">Run it where you prefer</h2>
+        <p className="mt-3 max-w-2xl text-[var(--muted)]">The corpus, the runner and this site are open source. The same audit can run through the site, inside your own Claude Code session, or from a clone of this repository.</p>
+        <div className="mt-8 grid gap-4 md:grid-cols-3">
+          <div className="card p-6">
+            <div className="text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">Through this site</div>
+            <p className="mt-3 text-sm text-[var(--muted)]">Estimate, key, run, report, attestation. Nothing to install. The report becomes public (or private, by link) and is attested on {clusterLabel()}.</p>
+            <Link href="/#start" className="btn btn-outline btn-sm mt-4">Submit a repository</Link>
+          </div>
+          <div className="card p-6">
+            <div className="text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">Inside Claude Code</div>
+            <p className="mt-3 text-sm text-[var(--muted)]">The auditor-skill corpus is a Claude Code plugin. Load it in your own repository and run the audit locally, on your subscription or key. No upload, no third party.</p>
+            <pre className="mono mt-4 overflow-x-auto rounded-xl border border-[var(--border)] bg-black/40 p-3 text-xs">{`git clone https://github.com/solanabr/auditor-skill
+claude --plugin-dir ./auditor-skill
+> /auditor:audit --scope program`}</pre>
+          </div>
+          <div className="card p-6">
+            <div className="text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">From a clone</div>
+            <p className="mt-3 text-sm text-[var(--muted)]">Site, runner, attestation program and report pipeline in one repository. One command brings it up locally; the local runner audits any clone with your own Claude Code login.</p>
+            <pre className="mono mt-4 overflow-x-auto rounded-xl border border-[var(--border)] bg-black/40 p-3 text-xs">{`git clone --recurse-submodules ${repoUrl}
+cd ${repo.split("/")[1]?.replace(/\.$/, "")} && pnpm dev
+pnpm audit:local -- Org/repo`}</pre>
+          </div>
+        </div>
+      </section>
+
       {/* Cost */}
       <section id="pricing" className="container-x scroll-mt-24">
-        <h2 className="h-section text-3xl sm:text-4xl">What it costs</h2>
-        <p className="mt-3 max-w-2xl text-[var(--muted)]">
-          Nothing, from us. This is a public good: no fees, no accounts, no tokens of ours. The only cost is the model usage on your own Anthropic key, billed to you at list prices, and we tell you the ceiling before you start.
-        </p>
+        <h2 className="h-section text-3xl sm:text-4xl">Cost</h2>
         <div className="mt-8 grid gap-4 md:grid-cols-3">
           <div className="card p-6">
             <div className="text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">Estimate</div>
-            <div className="mt-2 text-4xl font-bold">Free</div>
-            <p className="mt-3 text-sm text-[var(--muted)]">Repository size, language mix, which checklists and known-vector groups apply, and the expected cost per model. Instant, no key needed.</p>
+            <div className="mt-2 text-3xl font-bold">Free</div>
+            <p className="mt-3 text-sm text-[var(--muted)]">Repository size, language mix, which checklists and known-vector groups apply, expected cost per model. No key needed.</p>
           </div>
-          <div className="card card-gradient p-6">
+          <div className="card p-6">
             <div className="text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">Audit</div>
-            <div className="mt-2 text-4xl font-bold">Your key</div>
+            <div className="mt-2 text-3xl font-bold">Your model usage</div>
             <p className="mt-3 text-sm text-[var(--muted)]">
-              Typically $16–35 on Claude Opus 5 for an on-chain program, a few dollars on Sonnet. Models offered: {models.map((m) => m.label).join(", ")}. Report page, badge and attestation included.
+              Billed by Anthropic to your key at list prices. Measured on eight on-chain programs with Claude Opus 5: $16 to $32 each. Models offered: {models.map((m) => m.label).join(", ")}.
             </p>
           </div>
           <div className="card p-6">
             <div className="text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">Attestation</div>
-            <div className="mt-2 text-4xl font-bold">Free</div>
-            <p className="mt-3 text-sm text-[var(--muted)]">Written on {clusterLabel()} by our attester key. You do not need a wallet, SOL or anything on-chain. The account address is derived from the repository URL and the commit, so anyone can find it without us.</p>
-            <p className="mt-3 text-sm text-[var(--dim)]">
-              <b className="text-[var(--muted)]">Later:</b> attestations will be the one thing we charge for. The goal is that a repository audited once gets a fresh attestation on every new commit, with a delta audit of what changed since the last attested commit.
-            </p>
+            <div className="mt-2 text-3xl font-bold">Free today</div>
+            <p className="mt-3 text-sm text-[var(--muted)]">Written by our attester key. No wallet or SOL on your side.</p>
+            <p className="mt-3 text-sm text-[var(--muted)]">Attestations are what we intend to charge for later: a repository audited once would get a new attestation on every subsequent commit, backed by an audit of the diff since the last attested commit.</p>
           </div>
         </div>
-        <p className="mt-4 text-xs text-[var(--dim)]">Model list and prices are maintained in config/models.json in the repository. A rigorous first pass, not a substitute for a human audit and never a &quot;safe to deploy&quot; stamp.</p>
       </section>
 
       {/* On-chain */}
       <section id="onchain" className="container-x scroll-mt-24">
-        <div className="card card-gradient grid gap-8 p-8 md:grid-cols-2">
+        <div className="card grid gap-8 p-8 md:grid-cols-2">
           <div>
-            <h2 className="h-section text-3xl">What goes on-chain</h2>
-            <p className="mt-3 text-[var(--muted)]">One account per (repository, commit), written only by the attester key. Anyone can recompute its address from the GitHub URL and the commit and read it without us.</p>
-            <p className="mt-3 text-[var(--muted)]">Finding text never leaves the report. Only hashes and counts are public forever. Today this runs on {clusterLabel()}; the program is the same one a mainnet deployment would use.</p>
+            <h2 className="h-section text-3xl">What is on-chain</h2>
+            <p className="mt-3 text-[var(--muted)]">
+              Program <span className="mono text-sm">{programId}</span> on {clusterLabel()}. One account per (repository, commit), written only by the attester key; a re-audit of the same commit updates the account rather than creating a second one.
+            </p>
+            <p className="mt-3 text-[var(--muted)]">Finding text never goes on-chain. Corpus version in use: <span className="mono text-sm">{corpusVersion()}</span>.</p>
           </div>
           <ul className="mono grid grid-cols-1 gap-1 text-sm sm:grid-cols-2">
             {["repo_hash = sha256(url)", "commit_sha", "corpus_version", "model_id", "report_sha256", "counts[critical…info]", "visibility", "timestamp", "attester"].map((f) => (

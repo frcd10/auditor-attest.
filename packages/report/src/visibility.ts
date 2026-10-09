@@ -1,9 +1,10 @@
 /**
- * Disclosure rules (non-negotiable 4), enforced here and only here:
- *  - private                      → never listed, reachable only with the access token.
- *  - public + verified maintainer → everything visible immediately.
- *  - public + unverified          → Critical/High redacted until maintainer ack or 90 days.
- * Counts are always visible. On-chain never carries finding text.
+ * Disclosure rules, enforced here and only here:
+ *  - private → never listed, reachable only with the access token.
+ *  - public  → everything visible, Critical and High included (decided 2026-10-09; the
+ *              earlier 90-day redaction is kept in the code path for operators who want
+ *              it back via REDACT_PUBLIC=1).
+ * On-chain never carries finding text.
  */
 
 export type RequestedVisibility = "public" | "private";
@@ -24,6 +25,7 @@ export function redactUntilFor(createdAt: Date): Date {
 
 export function effectiveVisibility(r: VisibilityInput, now: Date = new Date()): EffectiveVisibility {
   if (r.visibility === "private") return "private";
+  if (process.env.REDACT_PUBLIC !== "1") return "public";
   if (r.submitterVerified) return "public";
   if (r.maintainerAckAt && r.maintainerAckAt.getTime() <= now.getTime()) return "public";
   if (r.redactUntil && r.redactUntil.getTime() <= now.getTime()) return "public";

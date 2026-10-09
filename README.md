@@ -1,6 +1,6 @@
 # Auditor Attest
 
-**A public good for the Solana ecosystem. 100% open source. Free to use.**
+**Open-source security audits for Solana programs, run on your own model key, recorded on-chain. No fees.**
 
 Paste a public GitHub link, get a cost estimate, paste a throwaway Anthropic API key, and
 an AI auditor runs the open-source [auditor-skill](https://github.com/solanabr/auditor-skill)
