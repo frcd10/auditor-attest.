@@ -18,7 +18,11 @@
   "highest_severity": 7,
   "visibility": "public_redacted",
   "submitter_verified": false,
-  "attestation": null,
+  "attestation": {
+    "tx": "DCFaUNE6o2CmhC7iWZ9Swk8DK4mjzsmZGDDfizTd6vWcNFsY8j7bnYToQKLMFbSV6f9RpUeGfyMFNt2DhsC4frt",
+    "pda": "BcciTsyhAz9E7SBaqRtcAbn5soJL6SGSgYFvAxcQL7jm",
+    "program_id": "sXtvdoheTtFBukx8vCppJHhiiJHW2xa3xc5KaPAhzkC"
+  },
   "usage": {
     "input_tokens": 0,
     "output_tokens": 0,
