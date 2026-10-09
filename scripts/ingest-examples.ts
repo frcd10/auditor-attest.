@@ -64,6 +64,12 @@ export function discover(root: string): { found: Example[]; skipped: { label: st
         skipped.push({ label, reason: "not a git clone" });
         continue;
       }
+      // Written by scripts/unpublish.ts: never put this repo back on the site.
+      const skipMarker = join(dir, ".skip-ingest");
+      if (existsSync(skipMarker)) {
+        skipped.push({ label, reason: readFileSync(skipMarker, "utf8").trim().split("\n")[0] || "marked .skip-ingest" });
+        continue;
+      }
       const auditDirs = readdirSync(dir).filter((e) => /^audit_\d+$/.test(e) && existsSync(join(dir, e, "REPORT.md"))).sort((a, b) => Number(a.slice(6)) - Number(b.slice(6)));
       if (auditDirs.length === 0) {
         skipped.push({ label, reason: "no audit_N/REPORT.md" });
