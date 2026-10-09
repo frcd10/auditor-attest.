@@ -1,0 +1,43 @@
+{
+  "repo": "https://github.com/OpenEdenHQ/openeden.tbill.solana",
+  "owner": "OpenEdenHQ",
+  "name": "openeden.tbill.solana",
+  "commit": "948bb2bb1c224c51ef7aeec7fc1d2bee3dcc24d4",
+  "corpus_version": "7.3.0@6bb2cbf",
+  "model": "claude-fable-5-1",
+  "started_at": null,
+  "finished_at": "2026-09-11T00:00:00.000Z",
+  "report_sha256": "b49e6aa04e7b6a459cbed170baf1b690a134740d6cbac3bc4681465c6da61a32",
+  "counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 2,
+    "low": 4,
+    "info": 5
+  },
+  "highest_severity": 6,
+  "visibility": "public_redacted",
+  "submitter_verified": false,
+  "attestation": null,
+  "usage": {
+    "input_tokens": 1672,
+    "output_tokens": 195997,
+    "cache_read_tokens": 2046986,
+    "cache_write_tokens": 376805,
+    "cost_usd": 15.038379
+  },
+  "parser": {
+    "format": "internal",
+    "declared_counts": {
+      "critical": 0,
+      "high": 0,
+      "medium": 2,
+      "low": 4,
+      "info": 5
+    },
+    "risk_score": 6,
+    "warnings": []
+  },
+  "job_id": null,
+  "tier": "manual"
+}

@@ -1,0 +1,43 @@
+{
+  "repo": "https://github.com/streamflow-finance/streamflow-program",
+  "owner": "streamflow-finance",
+  "name": "streamflow-program",
+  "commit": "673f9641041465bf2b8031f166b05e6f96b48ff5",
+  "corpus_version": "7.3.0@6bb2cbf",
+  "model": "claude-fable-5-1",
+  "started_at": null,
+  "finished_at": "2026-09-10T00:00:00.000Z",
+  "report_sha256": "d93b69504b7b705877b895c117d078f0e90599280399fbea0334975b661b65eb",
+  "counts": {
+    "critical": 1,
+    "high": 1,
+    "medium": 3,
+    "low": 10,
+    "info": 5
+  },
+  "highest_severity": 9,
+  "visibility": "public_redacted",
+  "submitter_verified": false,
+  "attestation": null,
+  "usage": {
+    "input_tokens": 1480,
+    "output_tokens": 190017,
+    "cache_read_tokens": 1112694,
+    "cache_write_tokens": 340207,
+    "cost_usd": 14.046411
+  },
+  "parser": {
+    "format": "internal",
+    "declared_counts": {
+      "critical": 1,
+      "high": 1,
+      "medium": 3,
+      "low": 10,
+      "info": 5
+    },
+    "risk_score": 10,
+    "warnings": []
+  },
+  "job_id": null,
+  "tier": "manual"
+}

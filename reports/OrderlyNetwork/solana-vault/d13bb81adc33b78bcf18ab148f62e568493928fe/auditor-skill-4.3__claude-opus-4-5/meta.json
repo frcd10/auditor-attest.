@@ -1,0 +1,43 @@
+{
+  "repo": "https://github.com/OrderlyNetwork/solana-vault",
+  "owner": "OrderlyNetwork",
+  "name": "solana-vault",
+  "commit": "d13bb81adc33b78bcf18ab148f62e568493928fe",
+  "corpus_version": "auditor-skill@4.3",
+  "model": "claude-opus-4-5",
+  "started_at": null,
+  "finished_at": "2026-06-20T00:00:00.000Z",
+  "report_sha256": "909a2ec0d82a215c19734eb3c964c79b293255a64ed85dab8552abd26aa61a5c",
+  "counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 2,
+    "low": 3,
+    "info": 0
+  },
+  "highest_severity": 6,
+  "visibility": "public_redacted",
+  "submitter_verified": false,
+  "attestation": null,
+  "usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cache_read_tokens": 0,
+    "cache_write_tokens": 0,
+    "cost_usd": 0
+  },
+  "parser": {
+    "format": "legacy",
+    "declared_counts": {
+      "critical": 0,
+      "high": 0,
+      "medium": 2,
+      "low": 3,
+      "info": 0
+    },
+    "risk_score": 6,
+    "warnings": []
+  },
+  "job_id": null,
+  "tier": "manual"
+}

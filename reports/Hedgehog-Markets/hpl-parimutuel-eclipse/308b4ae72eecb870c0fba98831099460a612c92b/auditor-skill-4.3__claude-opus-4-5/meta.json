@@ -1,0 +1,47 @@
+{
+  "repo": "https://github.com/Hedgehog-Markets/hpl-parimutuel-eclipse",
+  "owner": "Hedgehog-Markets",
+  "name": "hpl-parimutuel-eclipse",
+  "commit": "308b4ae72eecb870c0fba98831099460a612c92b",
+  "corpus_version": "auditor-skill@4.3",
+  "model": "claude-opus-4-5",
+  "started_at": null,
+  "finished_at": "2026-06-20T00:00:00.000Z",
+  "report_sha256": "9368de16f5e3c40421e8aea981f9d1b54c37a8b423a6cc15e23250d430f5c042",
+  "counts": {
+    "critical": 1,
+    "high": 0,
+    "medium": 0,
+    "low": 2,
+    "info": 0
+  },
+  "highest_severity": 10,
+  "visibility": "public_redacted",
+  "submitter_verified": false,
+  "attestation": {
+    "tx": "2yjNRJXKgchnXT6ueGH96E6TVnoX6ycJ3o66bK63wcDW8QFZyGLMFRjhDjzmbkFoUw2KUvqnc6q2QWtixeUq6zjH",
+    "pda": "Cg3K2p3Wxvd8FVbCuXxR8MwU6HcBnAHXyYFf2Wf3tQvg",
+    "program_id": "sXtvdoheTtFBukx8vCppJHhiiJHW2xa3xc5KaPAhzkC"
+  },
+  "usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cache_read_tokens": 0,
+    "cache_write_tokens": 0,
+    "cost_usd": 0
+  },
+  "parser": {
+    "format": "legacy",
+    "declared_counts": {
+      "critical": 1,
+      "high": 0,
+      "medium": 0,
+      "low": 2,
+      "info": 0
+    },
+    "risk_score": 10,
+    "warnings": []
+  },
+  "job_id": null,
+  "tier": "manual"
+}

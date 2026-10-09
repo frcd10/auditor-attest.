@@ -1,0 +1,43 @@
+{
+  "repo": "https://github.com/UXDProtocol/uxd-program",
+  "owner": "UXDProtocol",
+  "name": "uxd-program",
+  "commit": "b860eaa70237372aea31d96697d62e6e1fa5fb1f",
+  "corpus_version": "auditor-skill@4.3",
+  "model": "claude-opus-4-5",
+  "started_at": null,
+  "finished_at": "2026-06-20T00:00:00.000Z",
+  "report_sha256": "7c88d318da25ccf939c6a7594574f432e69daf731cc532deb6d0c5f26dd937d4",
+  "counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 1,
+    "info": 0
+  },
+  "highest_severity": 3,
+  "visibility": "public_redacted",
+  "submitter_verified": false,
+  "attestation": null,
+  "usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cache_read_tokens": 0,
+    "cache_write_tokens": 0,
+    "cost_usd": 0
+  },
+  "parser": {
+    "format": "legacy",
+    "declared_counts": {
+      "critical": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 1,
+      "info": 0
+    },
+    "risk_score": 3,
+    "warnings": []
+  },
+  "job_id": null,
+  "tier": "manual"
+}

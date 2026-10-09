@@ -1,0 +1,43 @@
+{
+  "repo": "https://github.com/Kamino-Finance/scope",
+  "owner": "Kamino-Finance",
+  "name": "scope",
+  "commit": "fe5352366a7215dda5c6f7b867a6bb5929d52c94",
+  "corpus_version": "7.3.0@6bb2cbf",
+  "model": "claude-opus-5",
+  "started_at": null,
+  "finished_at": "2026-09-11T00:00:00.000Z",
+  "report_sha256": "6dc223acf04dbb0201ed95c0dc295bdb627d20d26c3011272100962862acc611",
+  "counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 3,
+    "low": 11,
+    "info": 7
+  },
+  "highest_severity": 6,
+  "visibility": "public_redacted",
+  "submitter_verified": false,
+  "attestation": null,
+  "usage": {
+    "input_tokens": 1438,
+    "output_tokens": 284897,
+    "cache_read_tokens": 37725228,
+    "cache_write_tokens": 623063,
+    "cost_usd": 29.886373
+  },
+  "parser": {
+    "format": "internal",
+    "declared_counts": {
+      "critical": 0,
+      "high": 0,
+      "medium": 3,
+      "low": 11,
+      "info": 7
+    },
+    "risk_score": 6,
+    "warnings": []
+  },
+  "job_id": null,
+  "tier": "manual"
+}

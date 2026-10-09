@@ -1,0 +1,45 @@
+{
+  "repo": "https://github.com/QuarryProtocol/quarry",
+  "owner": "QuarryProtocol",
+  "name": "quarry",
+  "commit": "df6a75aa7fe53236cf41fa8ba7f87657bd9ec7ae",
+  "corpus_version": "auditor-skill@4.3",
+  "model": "claude-opus-4-5",
+  "started_at": null,
+  "finished_at": "2026-06-20T00:00:00.000Z",
+  "report_sha256": "1e986fd68ba4995b9d8cd0f98e00bbadb3d7f2ccc9385e34aa7c7bf1c18ba3ec",
+  "counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 0,
+    "info": 3
+  },
+  "highest_severity": 1,
+  "visibility": "public_redacted",
+  "submitter_verified": false,
+  "attestation": null,
+  "usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cache_read_tokens": 0,
+    "cache_write_tokens": 0,
+    "cost_usd": 0
+  },
+  "parser": {
+    "format": "legacy",
+    "declared_counts": {
+      "critical": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 0,
+      "info": 3
+    },
+    "risk_score": 2,
+    "warnings": [
+      "declared info count 3 ≠ parsed finding blocks 0"
+    ]
+  },
+  "job_id": null,
+  "tier": "manual"
+}

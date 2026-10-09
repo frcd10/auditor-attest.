@@ -1,0 +1,136 @@
+{
+  "duration_api_ms": 888721,
+  "stop_reason": "end_turn",
+  "session_id": "9ba276bc-6c6b-4a03-8d4e-34e5f6bb6366",
+  "total_cost_usd": 16.0065785,
+  "usage": {
+    "input_tokens": 124,
+    "cache_creation_input_tokens": 430910,
+    "cache_read_input_tokens": 12565913,
+    "output_tokens": 216505,
+    "output_tokens_details": {
+      "thinking_tokens": 86278
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 430910,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "not_available",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 13,
+        "cache_read_input_tokens": 410165,
+        "cache_creation_input_tokens": 1007,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 1007
+        },
+        "type": "message"
+      }
+    ],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 1222,
+      "outputTokens": 11,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.001277,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000,
+      "thinkingTokens": 0,
+      "canonicalModel": "claude-haiku-4-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    },
+    "claude-opus-5": {
+      "inputTokens": 124,
+      "outputTokens": 216505,
+      "cacheReadInputTokens": 12565913,
+      "cacheCreationInputTokens": 430910,
+      "webSearchRequests": 0,
+      "costUSD": 16.0053015,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000,
+      "thinkingTokens": 86278,
+      "canonicalModel": "claude-opus-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [
+    {
+      "tool_name": "Write",
+      "tool_use_id": "toolu_01MfN9GDAWog714pv3VZnbW2",
+      "tool_input": {
+        "file_path": "/home/felip/dev/auditor-site/examples i runned local/ISC/isc_bridge/audit_2/intake.md",
+        "content": "# Intake — ISC Multichain Bridge (`isc_bridge`)\n\n| | |\n| ------------------- | ------------------------------------------------- |\n| **Audit #**         | audit_2                                           |\n| **Mode**            | automated (non-interactive; QUESTIONS.md defaults applied) |\n| **Intake date**     | 2026-09-11                                        |\n| **Answered by**     | defaults applied — no human respondent available  |\n\n> Every answer below was derived either (a) from evidence in the repository at the\n> pinned commit, or (b) from the QUESTIONS.md default for an unanswered question.\n> Which of the two applies is recorded per row and consolidated in §8.\n\n---\n\n## 1. Scope & Commit Pin\n\n| | |\n| ------------------- | ------------------------------------------------- |\n| **Repository**      | `/home/felip/dev/auditor-site/examples i runned local/ISC/isc_bridge` (local clone, no remote configured) |\n| **Branch**          | detached `HEAD` (main branch of record: `main`)   |\n| **Audited commit**  | `81ae372a6383951796709c55c7687a3b80618601` — \"Cleanup unused imports\", 2023-07-18 (single-commit history) |\n| **Scope**           | **PROGRAM** (`--scope program`)                    |\n| **In scope**        | On-chain code only: `solana/src/lib.rs`, `solana/src/instructions.rs`, `solana/src/processes.rs`, `solana/Cargo.toml`, `solana/Cargo.lock`; on-chain EVM contracts `evm/contracts/ISC.sol`, `evm/contracts/Swap.sol`. Checklists 01–07 + 16 (FULL-AUDIT.md § Scope Control: `PROGRAM`), plus checklist 15 for Solidity per OUTPUT-RULES Rule 7 (no dedicated Solidity checklist exists). |\n| **Out of scope**    | `web-client/**` (Next.js/JS off-chain client — checklists 08/10), `evm/scripts/launch.py` (Brownie deploy script — checklist 14), `web-client/package.json` + `solana/Cargo.lock` dependency vetting (checklist 11), dedicated secrets sweep (checklist 12), deployment/infra (13), logging/monitoring/IR (17), privacy/compliance (18), AI-agent (19), off-chain Rust services (20 — no `.rs` outside the program crate). Reason: `--scope program` gate. Untracked working-tree directories `AUDITOR/`, `audit_1/`, `audit_2/` are not part of commit `81ae372` and were excluded. |\n\n**Q44 (exclusions):** unanswered → default applied: exclude nothing beyond the scope gate;\nbuild artifacts/`node_modules` are absent from the tree anyway.\n\n---\n\n## 2. Target Languages & Frameworks\n\n| | |\n| --------------------- | ----------------------------------------------- |\n| **On-chain framework**| **Native Solana** (no Anchor). `solana-program 1.16.1`, `entrypoint!` macro at `solana/src/lib.rs:11`, manual `next_account_info` account parsing. No `Anchor.toml` in the tree. (Q3) |\n| **Languages detected**| Rust (on-chain, 413 LOC), Solidity ^0.8.9 (on-chain, 89 LOC), JavaScript/ESM (off-chain client, out of scope), Python (Brownie deploy script, out of scope) |\n| **Backend**           | none — no server component in the repository (Q4) |\n| **Frontend**          | Next.js-style `web-client/pages/index.js` (out of scope under PROGRAM) (Q5) |\n| **Database**          | none (Q6) |\n| **Monorepo**          | yes — informal multi-package layout (`solana/`, `evm/`, `web-client/`), no workspace manager (Q7) |\n\n---\n\n## 3. Protocol Class\n\n| | |\n| ----------------------- | --------------------------------------------- |\n| **Project type**        | DeFi / bridge infrastructure — a cross-chain token bridge (\"Native ISC to Native ISC multichain bridge powered by Wormhole\", `README.md:3`) with a 1:1 local swap pool on each chain (Q1) |\n| **Handles user funds**  | **yes — custodial pool.** The Solana PDA (`seeds = [\"oolaa\"]`, `solana/src/processes.rs:69`) owns ISC and OIL associated token accounts that are the swap reserves; the EVM `Swap` contract holds the mirrored reserves (`evm/contracts/Swap.sol:34`) (Q17) |\n| **Tokens supported**    | Two hardcoded SPL mints: ISC `C2Jgz6DdupWkdhMpxdZRSy8LL7m9ZFDnUn4tsgPv2H7k` and OIL `HXvmV3WGGpAqnehA5ah18b3bpsDApFqXrFvgqVW6dCX3` (`solana/src/processes.rs:13-14`); classic SPL Token (`spl-token 3.5.0`), **not** Token-2022. EVM side: two ERC-20s (Q18) |\n| **DEX integrations**    | none (Q19) |\n| **Fees**                | none — the swap is strictly 1:1 with no fee (`solana/src/processes.rs:152-183`) (Q20) |\n| **Withdrawal model**    | instant, permissionless, symmetric swap; there is **no** admin withdrawal, no cooldown and no pause (Q21) |\n| **Uses oracles**        | none — the exchange rate is the hardcoded constant 1:1; no price feed is read (Q23) |\n| **CPI targets**         | SPL Token (`spl_token::instruction::transfer`), SPL Associated Token Account (`create_associated_token_account`), System Program (transitively, via the ATA program) (Q24) |\n| **Economic review**     | **required** (funds = yes) — checklist 06 **on** |\n\n**Wormhole:** the bridge leg itself (`web-client/scripts/wormhole.mjs`, Wormhole Token Bridge\n`B6RHG3mfcckmrYN1UhmJzyS1XX3fZKbkeUcpJe9Sy3FE`) is driven entirely off-chain by the client; the\naudited on-chain program does **not** invoke or verify any Wormhole VAA. `references/methodologies/bridges.md`\nmarkers (`guardian`, `vaa`, `verify_signatures`, `emitter`) are absent from the in-scope on-chain\ncode, so the bridge methodology applies only as context for the swap pool's threat model.\n\n---\n\n## 4. Compliance Frameworks\n\n| | |\n| ----------------------- | --------------------------------------------- |\n| **Regulatory scope**    | unanswered → default **\"None / not sure\"** (Q35) |\n| **Collects PII**        | no — wallet addresses / EVM addresses only; no PII handling exists in the on-chain code (Q36) |\n| **Compliance checklist**| checklist 18 **off** (also out of scope under `--scope program`) |\n\n---\n\n## 5. Severity Calibration\n\n| | |\n| ------------------------- | ------------------------------------------- |\n| **Deployment status**     | unanswered → evidence-adjusted default: **devnet / local-net**. All RPC endpoints in `web-client/config/config.json` are `http://localhost:*` (`:5`, `:18`, `:30`), and the EVM private key at `:6`/`:19` is the well-known Ganache/Hardhat deterministic test key. Treated as **not-yet-mainnet**, audited as if mainnet-bound (SKILL.md \"Rationalizations to Reject\": *\"It's only devnet — audit as if mainnet; devnet code ships\"*). (Q8) |\n| **TVL / funds at risk**   | unanswered → default **Unknown** → calibrated to the pre-launch baseline (no +1 fund multiplier applied) (Q10) |\n| **Upgradeable**           | unanswered and **not verifiable statically** — the repo contains no deploy script, no `solana program deploy`/`set-upgrade-authority` invocation and no governance document. Default applied: assume deployed under the standard BPF Upgradeable Loader with a **single-key** authority unless the code shows otherwise. (Q11) |\n| **Top concerns (ranked)** | QUESTIONS.md pre-marked ranking carried over: **1. Fund theft / drain · 2. API abuse / DDoS · 3. Supply-chain attack** (Q40) |\n| **Audit depth**           | unanswered → default **Standard** raised to **Deep** — the in-scope surface is 413 Rust LOC + 89 Solidity LOC, small enough for full file-by-file reading plus economic-attack modelling (Q41) |\n| **Report delivery**       | Markdown file in repo → `audit_2/REPORT.md` (Q42) |\n\n**Calibration rules applied**\n\n- Q8 = devnet/local (evidence-based, not asserted) → **no** +1 severity uplift on fund-related\n  findings; severities are stated at their mainnet-equivalent impact with the deployment status\n  named in each finding that it affects.\n- Q10 = Unknown → pre-launch baseline; critical findings are **not** double-weighted.\n- Q11 = unanswered/unverifiable → the QUESTIONS.md \"single wallet ⇒ auto-flag Severity 8+\" rule is\n  **NOT** mechanically applied, because the premise (single-wallet authority) could not be\n  confirmed from the repository and applying it would be over-reporting (OUTPUT-RULES Rule 5b).\n  The governance gap is instead reported at its evidence-supported severity and explicitly flagged\n  `[UNDETERMINED]` with the escalation condition stated.\n- Q17 = yes (custodial pool) → checklist 06 fully applied; first-depositor / donation / drain\n  vectors evaluated against the PDA reserves.\n- Q25 = first audit → no assumptions about prior remediation; every item re-derived from source.\n- Q41 = deep → every in-scope file read end to end; no grep-only verdicts.\n\n---\n\n## 6. Trust-Model Inputs (CRITICAL)\n\n| Actor | Who / how gated | Trusted to (privileges) | Trusted NOT to |\n| ----- | --------------- | ----------------------- | -------------- |\n| **Upgrade authority** | Unknown — not pinned in the repo; assumed single wallet under the BPF Upgradeable Loader (Q11 default) | Replace the program binary at `7JAUAovyJHXsvqJkeXmjiTUpWTBADiFPagmkgj2Y2s47` | Push an upgrade that adds a reserve-drain instruction; assumed key-secure. **This is the single largest untested assumption in the engagement.** |\n| **Admin / manager**   | **Does not exist.** The program has no admin instruction, no authority account and no config state (`solana/src/lib.rs:20-30` — exactly two instruction variants, both permissionless) | — | — |\n| **EVM `ISCToken` owner** | `Ownable` owner (`evm/contracts/ISC.sol:9`) | `mint()` unlimited, `pause()`/`unpause()` (`:14-24`) | Mint unbacked ISC or pause transfers to freeze the bridge |\n| **Oracle**            | none | — | — |\n| **Keeper / crank**    | none — no scheduled or permissioned maintenance path exists | — | — |\n| **Liquidity provider / pool funder** | Whoever seeds the PDA's ISC/OIL ATAs (off-chain, out of band; the program has no deposit instruction) | Fund the reserves | Withhold liquidity (griefing — no on-chain remedy exists) |\n| **Permissionless user** | anyone with a signature (`solana/src/processes.rs:38`) | Call `SwapIscToOil` / `SwapOilToIsc` for any `amount` | — (untrusted — the attacker) |\n| **Wormhole guardian set** | External (Wormhole Token Bridge `B6RHG3mfcckmrYN1UhmJzyS1XX3fZKbkeUcpJe9Sy3FE`), **not** verified by the audited program | Mint/burn the bridgeable OIL asset | Mint OIL without a matching lock. The README design intent is that a guardian compromise is capped at the pool's ISC reserve rather than total ISC supply. |\n\n**Trust-model narrative.** The audited Solana program is fully permissionless and holds no state\nof its own: its entire security rests on (a) the two hardcoded mint constants being the correct\nmints, (b) the `[\"oolaa\"]` PDA being the sole authority over the reserve ATAs, and (c) the SPL\nToken program enforcing the account validation the swap program itself omits. There is no admin,\nno pause, no fee and no rate parameter, so the only privileged actor is whoever holds the program's\nupgrade authority — an actor that the repository does not identify, constrain or document. On the\nEVM side the trust surface is wider: `ISCToken`'s `Ownable` owner can mint without bound and pause\nall transfers. The README's stated design goal — \"limited controlled exposure to ISC in the event\nof a bridge hack\" — is implemented only as an implicit cap (the pool's own reserve), never as an\nexplicit on-chain limit, so it holds only as long as the reserves are kept small.\n\n---\n\n## 7. Security History\n\n| | |\n| ----------------------- | --------------------------------------------- |\n| **Prior audits**        | unanswered → default **first audit** — no audit report, `SECURITY.md` or remediation note exists in the tree (Q25) |\n| **Incidents**           | unanswered → default **no known incidents** (single-commit history, no incident artefacts) (Q26) |\n| **Bug bounty**          | unanswered → default **none** — no `SECURITY.md`, no disclosure policy in the tree (Q27) |\n| **Incident response**   | unanswered → default **none** — no runbook, no pause mechanism in the program (Q28) |\n\n---\n\n## 8. Assumed Defaults (Unanswered)\n\n| Field (Q#) | Default applied | Basis |\n| ---------- | --------------- | ----- |\n| Q8 deployment status | devnet / local-net; audited as if mainnet-bound | inferred from code (`config.json:5,18,30` localhost RPCs; Ganache test key at `:6`) |\n| Q10 TVL / funds at risk | \"Unknown\" → severity calibrated to the pre-launch baseline; no fund multiplier | QUESTIONS.md default |\n| Q11 upgradeable | assumed present, upgrade authority treated as trusted-but-single; **not** auto-escalated to Severity 8 because the premise is unverifiable | QUESTIONS.md default, tempered by OUTPUT-RULES Rule 5b |\n| Q12 source public | assumed public (code is in a git repo with no licence restriction marker) | QUESTIONS.md default |\n| Q13/Q14/Q15/Q16 auth, roles, admin | wallet signature only; no roles; no admin panel — confirmed from code, not assumed | inferred from code (`processes.rs:38`) |\n| Q22 external APIs | Wormhole REST (`config.json:43`) — off-chain only; none reached from on-chain code | inferred from code |\n| Q23 oracle | assumed no oracle unless code shows a feed — none found | inferred from code |\n| Q25 prior audits | first audit — no assumptions about prior fixes | QUESTIONS.md default |\n| Q26 incidents | none known | QUESTIONS.md default |\n| Q27 bug bounty | none | QUESTIONS.md default |\n| Q28 incident response | none documented | QUESTIONS.md default |\n| Q29 developers with repo access | unknown → assumed small team / solo; no CODEOWNERS in tree | QUESTIONS.md default |\n| Q30 branch protection | unknown → assumed none (no `.github/`, single squashed commit) | QUESTIONS.md default |\n| Q31 CI/CD | none — no `.github/workflows`, no CI config of any kind in the tree | inferred from code |\n| Q32 automated tests | none — zero `#[test]`, zero `#[cfg(test)]`, no `tests/` directory anywhere in the repo | inferred from code |\n| Q33 secret scanner | assumed none — no gitleaks/pre-commit/secret-scanning config in the tree | QUESTIONS.md default |\n| Q34 dependency strategy | assumed \"pin and forget\" — caret-free exact-ish versions in `solana/Cargo.toml`, no Dependabot/Renovate config | QUESTIONS.md default |\n| Q35–Q38 compliance | none / not sure; no PII; no privacy policy; server location unknown | QUESTIONS.md default |\n| Q39 audit focus | `--scope program` as supplied by the engagement | engagement flag |\n| Q41 audit depth | Standard → raised to Deep given the small in-scope surface | auditor judgement, recorded |\n| Q43 access | local filesystem clone at the pinned commit | engagement setup |\n| Q45 additional context | none supplied | QUESTIONS.md default |\n\n> Every default listed here is carried into the report's **§4.6 Assumptions &\n> Simplifications** as an explicit assumption — so \"no finding here\" reads against\n> the stated default rather than as a blanket clearance.\n</content>\n</invoke>\n"
+      }
+    },
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_01RUyD5fVJDvUCcEE28WqpFJ",
+      "tool_input": {
+        "command": "cd \"/home/felip/dev/auditor-site/examples i runned local/ISC/isc_bridge\" && pwd && ls audit_2 && printf 'probe\\n' > audit_2/.probe && ls -la audit_2/.probe && rm audit_2/.probe && echo OK",
+        "description": "Check write access to the audit output directory"
+      }
+    },
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_01DWq9puE3ghz1vmJAfYdhF6",
+      "tool_input": {
+        "command": "wc -l /home/felip/dev/auditor-site/vendor/auditor-skill/known-vectors/0{01,03,04,08,09,10,13,15,16,19,20,25,30}-*.md /home/felip/dev/auditor-site/vendor/auditor-skill/known-vectors/1{07,08,09,23,27,31}-*.md /home/felip/dev/auditor-site/vendor/auditor-skill/known-vectors/091-*.md",
+        "description": "Measure sizes of the relevant known-vector files"
+      }
+    }
+  ],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "is_error": false,
+  "num_turns": 85,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "audit_2/REPORT.md",
+  "ttft_ms": 1875,
+  "type": "result",
+  "duration_ms": 889531,
+  "uuid": "1249ae18-cc37-4327-b4ab-f71ebe8e75ff",
+  "ttft_stream_ms": 1512,
+  "time_to_request_ms": 288,
+  "first_content_frame_ms": 1513,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

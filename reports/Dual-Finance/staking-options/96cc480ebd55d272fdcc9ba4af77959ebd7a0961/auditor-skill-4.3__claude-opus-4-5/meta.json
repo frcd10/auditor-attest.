@@ -1,0 +1,47 @@
+{
+  "repo": "https://github.com/Dual-Finance/staking-options",
+  "owner": "Dual-Finance",
+  "name": "staking-options",
+  "commit": "96cc480ebd55d272fdcc9ba4af77959ebd7a0961",
+  "corpus_version": "auditor-skill@4.3",
+  "model": "claude-opus-4-5",
+  "started_at": null,
+  "finished_at": "2026-06-20T00:00:00.000Z",
+  "report_sha256": "f631cef3e988ee85805bbde45745f40affded1289a0753a724958435da41d517",
+  "counts": {
+    "critical": 0,
+    "high": 1,
+    "medium": 0,
+    "low": 2,
+    "info": 1
+  },
+  "highest_severity": 7,
+  "visibility": "public_redacted",
+  "submitter_verified": false,
+  "attestation": {
+    "tx": "gR4w9RTv1C7nuJmesbQyyxkBEGXh2ZQp59HaFGh7F34YYFwBDuuguHeGEioNZHPrEszkTjVTDd74NTVRKncKUaT",
+    "pda": "7Q6rguDKgceCtNG1e4KMzdEveX8DdcsBB5YReMgmx7ty",
+    "program_id": "sXtvdoheTtFBukx8vCppJHhiiJHW2xa3xc5KaPAhzkC"
+  },
+  "usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cache_read_tokens": 0,
+    "cache_write_tokens": 0,
+    "cost_usd": 0
+  },
+  "parser": {
+    "format": "legacy",
+    "declared_counts": {
+      "critical": 0,
+      "high": 1,
+      "medium": 0,
+      "low": 2,
+      "info": 1
+    },
+    "risk_score": 7,
+    "warnings": []
+  },
+  "job_id": null,
+  "tier": "manual"
+}

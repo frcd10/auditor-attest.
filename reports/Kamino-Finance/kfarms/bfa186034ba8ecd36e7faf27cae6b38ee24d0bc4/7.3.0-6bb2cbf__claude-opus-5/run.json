@@ -1,0 +1,174 @@
+{
+  "duration_api_ms": 1080634,
+  "stop_reason": "end_turn",
+  "session_id": "9a6ddf35-0e15-42cb-b0e0-1496985e4c3f",
+  "total_cost_usd": 22.104422999999993,
+  "usage": {
+    "input_tokens": 172,
+    "cache_creation_input_tokens": 475024,
+    "cache_read_input_tokens": 22815592,
+    "output_tokens": 237770,
+    "output_tokens_details": {
+      "thinking_tokens": 113673
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 475024,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "not_available",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 138,
+        "cache_read_input_tokens": 484836,
+        "cache_creation_input_tokens": 813,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 813
+        },
+        "type": "message"
+      }
+    ],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 1222,
+      "outputTokens": 11,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.001277,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000,
+      "thinkingTokens": 0,
+      "canonicalModel": "claude-haiku-4-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    },
+    "claude-opus-5": {
+      "inputTokens": 172,
+      "outputTokens": 237770,
+      "cacheReadInputTokens": 22815592,
+      "cacheCreationInputTokens": 475024,
+      "webSearchRequests": 0,
+      "costUSD": 22.103145999999995,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000,
+      "thinkingTokens": 113673,
+      "canonicalModel": "claude-opus-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_01BR1VhZopjvdCUa14kuDSJf",
+      "tool_input": {
+        "command": "cd \"/home/felip/dev/auditor-site/examples i runned local/Kamino/kfarms\" && wc -l $(git ls-files '*.rs') | sort -n && echo \"=== ts ===\" && wc -l tests/kfarms.ts migrations/deploy.ts && echo \"=== AUDITOR dir (untracked) ===\" && find AUDITOR -type f | head -50",
+        "description": "Count lines in Rust and TS files"
+      }
+    },
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_01D7zofPi8aptXcCn3dRdmFo",
+      "tool_input": {
+        "command": "ls ~/.cargo/git/checkouts/ 2>/dev/null | head -20; ls ~/.cargo/registry/src 2>/dev/null | head",
+        "description": "Check for vendored cargo git checkouts"
+      }
+    },
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_0168t6Rer3ZsU37xXJ88hTj8",
+      "tool_input": {
+        "command": "cd \"/home/felip/dev/auditor-site/examples i runned local/Kamino/kfarms/audit_2\" && for pat in 'AV-' 'AC-' 'AR-' 'CPI-' 'PDA-' 'EXT-' 'RE-' 'SM-' 'ECON-' 'OPS-' 'FV-' 'KV-'; do n=$(grep -oE \"^\\[(PASS\\*?|FAIL-[0-9]+|PARTIAL|N/A)\\][[:space:]]+${pat}[0-9]+\" REPORT.md | wc -l); echo \"$pat $n\"; done",
+        "description": "Count verdict lines per item prefix"
+      }
+    },
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_0147p4b4qUd5L6755p92ah24",
+      "tool_input": {
+        "command": "cd \"/home/felip/dev/auditor-site/examples i runned local/Kamino/kfarms/audit_2\" && grep -oE \"^\\[[A-Z/*0-9-]+\\][[:space:]]+AV-[0-9]+\" REPORT.md | grep -oE \"AV-[0-9]+\" | sort > /tmp/have.txt; for i in $(seq -w 1 90); do echo \"AV-0$i\"; done | sed 's/AV-0\\(...\\)/AV-\\1/' > /dev/null; seq -f \"AV-%03g\" 1 90 | sort > /tmp/want.txt; comm -13 /tmp/have.txt /tmp/want.txt",
+        "description": "Find missing AV item numbers"
+      }
+    },
+    {
+      "tool_name": "Edit",
+      "tool_use_id": "toolu_01E1GgGjHq8QgCumXV8i8P2x",
+      "tool_input": {
+        "file_path": "/home/felip/dev/auditor-site/examples i runned local/Kamino/kfarms/audit_2/REPORT.md",
+        "old_string": "[PASS]      AV-076: Bumps are canonical: Anchor `bump` (find_program_address) at derivation, ctx.bumps stored at init, and the stored bump reused for invoke_signed; create_program_address is never called — handler_initialize_farm.rs:19, utils/macros.rs:10-17 (see KV-104)\n[N/A]       AV-077:",
+        "new_string": "[PASS]      AV-076: Bumps are canonical: Anchor `bump` (find_program_address) at derivation, ctx.bumps stored at init, and the stored bump reused for invoke_signed; create_program_address is never called — handler_initialize_farm.rs:19, utils/macros.rs:10-17 (see KV-104)\n[N/A]       AV-089: no `require!` or branch reads ComputeBudget instructions — the program performs no Instructions-sysvar introspection at all (grep: no load_instruction_at / get_instruction_relative / compute_budget), so no transaction-v1 budget gate exists to be silently unenforced (see KV-135)\n[N/A]       AV-090: no instruction-introspection loop and no positional/count assumption exists — remaining_accounts are rejected outright (utils/constraints.rs:14-17) and every account is named in the Accounts struct, so the v1 instruction/account caps and no-op ComputeBudget instructions cannot affect this program (see KV-103, KV-136)\n[N/A]       AV-077:",
+        "replace_all": false
+      }
+    },
+    {
+      "tool_name": "Edit",
+      "tool_use_id": "toolu_01P7ThEca1Qf8Z9hZciiaBXp",
+      "tool_input": {
+        "file_path": "/home/felip/dev/auditor-site/examples i runned local/Kamino/kfarms/audit_2/REPORT.md",
+        "old_string": "[N/A]       AV-077: the program is Anchor 0.29",
+        "new_string": "[N/A]       AV-089: no `require!` or branch reads ComputeBudget instructions — the program performs no Instructions-sysvar introspection at all (no load_instruction_at / get_instruction_relative / compute_budget anywhere), so there is no transaction-v1 budget gate to be silently unenforced (see KV-135)\n[N/A]       AV-090: no instruction-introspection loop and no positional/count assumption exists — remaining_accounts are rejected outright (utils/constraints.rs:14-17) and every account is named in the Accounts struct, so the v1 instruction/account caps and no-op ComputeBudget instructions cannot affect this program (see KV-103, KV-136)\n[N/A]       AV-077: the program is Anchor 0.29",
+        "replace_all": false
+      }
+    },
+    {
+      "tool_name": "Edit",
+      "tool_use_id": "toolu_01LRHT4ce6VocFnd2mm1JcwC",
+      "tool_input": {
+        "file_path": "/home/felip/dev/auditor-site/examples i runned local/Kamino/kfarms/audit_2/roadmap.md",
+        "old_string": "**Repository Risk Score:** 6 — 🟡 MEDIUM · **Highest severity found:** 6 · **Findings:** 18",
+        "new_string": "**Repository Risk Score:** 6 — 🟡 MEDIUM · **Highest severity found:** 6 · **Findings:** 18 (0 critical, 0 high, 4 medium, 9 low, 5 info)",
+        "replace_all": false
+      }
+    }
+  ],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "is_error": false,
+  "num_turns": 125,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "No placeholders remain; all artifacts are under `./audit_2/` and the report is internally consistent (18 finding blocks = Severity Distribution total; 591/591 in-scope items and 58/58 in-scope vectors carry verdicts; \"Highest severity found\" = 6).\n\n/home/felip/dev/auditor-site/examples i runned local/Kamino/kfarms/audit_2/REPORT.md",
+  "ttft_ms": 1510,
+  "type": "result",
+  "duration_ms": 1081672,
+  "uuid": "bff2bb9f-7222-4142-8e4b-1934512e86fd",
+  "ttft_stream_ms": 1377,
+  "time_to_request_ms": 70,
+  "first_content_frame_ms": 1377,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

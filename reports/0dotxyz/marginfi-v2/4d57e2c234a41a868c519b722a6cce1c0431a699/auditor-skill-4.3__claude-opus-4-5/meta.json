@@ -1,0 +1,43 @@
+{
+  "repo": "https://github.com/0dotxyz/marginfi-v2",
+  "owner": "0dotxyz",
+  "name": "marginfi-v2",
+  "commit": "4d57e2c234a41a868c519b722a6cce1c0431a699",
+  "corpus_version": "auditor-skill@4.3",
+  "model": "claude-opus-4-5",
+  "started_at": null,
+  "finished_at": "2026-09-10T19:59:37.620Z",
+  "report_sha256": "b05a3ede3c73a74f4b29153bdd66c016ebfeed9a78d5502c737a142069bcb3e5",
+  "counts": {
+    "critical": 0,
+    "high": 1,
+    "medium": 0,
+    "low": 0,
+    "info": 0
+  },
+  "highest_severity": 7,
+  "visibility": "public_redacted",
+  "submitter_verified": false,
+  "attestation": null,
+  "usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cache_read_tokens": 0,
+    "cache_write_tokens": 0,
+    "cost_usd": 0
+  },
+  "parser": {
+    "format": "legacy",
+    "declared_counts": {
+      "critical": 0,
+      "high": 1,
+      "medium": 0,
+      "low": 0,
+      "info": 0
+    },
+    "risk_score": null,
+    "warnings": []
+  },
+  "job_id": null,
+  "tier": "manual"
+}

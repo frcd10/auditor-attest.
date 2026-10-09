@@ -1,0 +1,43 @@
+{
+  "repo": "https://github.com/lidofinance/solido",
+  "owner": "lidofinance",
+  "name": "solido",
+  "commit": "81abeadd9f862034f1d625862100d8f3f78084e1",
+  "corpus_version": "auditor-skill@4.3",
+  "model": "claude-opus-4-5",
+  "started_at": null,
+  "finished_at": "2026-06-20T00:00:00.000Z",
+  "report_sha256": "962d9b524879137dc5fe324f4765b53d02165ee5885473dc4c66522725aa23fd",
+  "counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 0,
+    "info": 0
+  },
+  "highest_severity": null,
+  "visibility": "public_redacted",
+  "submitter_verified": false,
+  "attestation": null,
+  "usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cache_read_tokens": 0,
+    "cache_write_tokens": 0,
+    "cost_usd": 0
+  },
+  "parser": {
+    "format": "legacy",
+    "declared_counts": {
+      "critical": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 0,
+      "info": 0
+    },
+    "risk_score": 0,
+    "warnings": []
+  },
+  "job_id": null,
+  "tier": "manual"
+}

@@ -1,0 +1,47 @@
+{
+  "repo": "https://github.com/Kamino-Finance/kfarms",
+  "owner": "Kamino-Finance",
+  "name": "kfarms",
+  "commit": "bfa186034ba8ecd36e7faf27cae6b38ee24d0bc4",
+  "corpus_version": "7.3.0@6bb2cbf",
+  "model": "claude-opus-5",
+  "started_at": null,
+  "finished_at": "2026-09-11T00:00:00.000Z",
+  "report_sha256": "8cef40431627e3a4448b994c69a7b52d22db564317e56ecb3d9dd5d7fa4913db",
+  "counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 4,
+    "low": 9,
+    "info": 5
+  },
+  "highest_severity": 6,
+  "visibility": "public_redacted",
+  "submitter_verified": false,
+  "attestation": {
+    "tx": "bkqVk5x42Sge3QeMHBkcfnchCRGJEJXNsLXRfNDGn8Apz52VMLgUsUSfn7VjNiFHZybCZmdQFz4w7Ccsc1Z9B8E",
+    "pda": "J974hnEmfH167QkhvDxYyKFx2cdNd9tth9NpnNJw2dqQ",
+    "program_id": "sXtvdoheTtFBukx8vCppJHhiiJHW2xa3xc5KaPAhzkC"
+  },
+  "usage": {
+    "input_tokens": 1394,
+    "output_tokens": 237781,
+    "cache_read_tokens": 22815592,
+    "cache_write_tokens": 475024,
+    "cost_usd": 20.328191
+  },
+  "parser": {
+    "format": "internal",
+    "declared_counts": {
+      "critical": 0,
+      "high": 0,
+      "medium": 4,
+      "low": 9,
+      "info": 5
+    },
+    "risk_score": 6,
+    "warnings": []
+  },
+  "job_id": null,
+  "tier": "manual"
+}

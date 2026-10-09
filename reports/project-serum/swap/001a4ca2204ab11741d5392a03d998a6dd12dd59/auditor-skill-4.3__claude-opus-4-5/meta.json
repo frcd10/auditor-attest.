@@ -1,0 +1,46 @@
+{
+  "repo": "https://github.com/project-serum/swap",
+  "owner": "project-serum",
+  "name": "swap",
+  "commit": "001a4ca2204ab11741d5392a03d998a6dd12dd59",
+  "corpus_version": "auditor-skill@4.3",
+  "model": "claude-opus-4-5",
+  "started_at": null,
+  "finished_at": "2026-06-20T00:00:00.000Z",
+  "report_sha256": "46c8cad5df79290d74ffa2df829f0f76b22188235fc6b1fad1d549d8cf114324",
+  "counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 2,
+    "low": 2,
+    "info": 0
+  },
+  "highest_severity": 5,
+  "visibility": "public_redacted",
+  "submitter_verified": false,
+  "attestation": null,
+  "usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cache_read_tokens": 0,
+    "cache_write_tokens": 0,
+    "cost_usd": 0
+  },
+  "parser": {
+    "format": "legacy",
+    "declared_counts": {
+      "critical": 0,
+      "high": 0,
+      "medium": 2,
+      "low": 2,
+      "info": 0
+    },
+    "risk_score": 5,
+    "warnings": [
+      "declared medium count 2 ≠ parsed finding blocks 1",
+      "declared info count 0 ≠ parsed finding blocks 1"
+    ]
+  },
+  "job_id": null,
+  "tier": "manual"
+}

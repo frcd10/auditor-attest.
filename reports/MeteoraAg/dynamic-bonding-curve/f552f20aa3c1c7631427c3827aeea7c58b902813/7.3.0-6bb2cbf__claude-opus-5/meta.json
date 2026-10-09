@@ -1,0 +1,43 @@
+{
+  "repo": "https://github.com/MeteoraAg/dynamic-bonding-curve",
+  "owner": "MeteoraAg",
+  "name": "dynamic-bonding-curve",
+  "commit": "f552f20aa3c1c7631427c3827aeea7c58b902813",
+  "corpus_version": "7.3.0@6bb2cbf",
+  "model": "claude-opus-5",
+  "started_at": null,
+  "finished_at": "2026-09-11T00:00:00.000Z",
+  "report_sha256": "5203d5aefb5464ba14db52d7def4413f5f7a724d3f0da8b2f56de7eabfa2c625",
+  "counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 3,
+    "low": 9,
+    "info": 0
+  },
+  "highest_severity": 6,
+  "visibility": "public_redacted",
+  "submitter_verified": false,
+  "attestation": null,
+  "usage": {
+    "input_tokens": 1436,
+    "output_tokens": 266510,
+    "cache_read_tokens": 35956203,
+    "cache_write_tokens": 655521,
+    "cost_usd": 28.745038
+  },
+  "parser": {
+    "format": "internal",
+    "declared_counts": {
+      "critical": 0,
+      "high": 0,
+      "medium": 3,
+      "low": 9,
+      "info": 0
+    },
+    "risk_score": 6,
+    "warnings": []
+  },
+  "job_id": null,
+  "tier": "manual"
+}

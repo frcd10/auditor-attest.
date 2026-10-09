@@ -1,0 +1,47 @@
+{
+  "repo": "https://github.com/TheISCTeam/isc_bridge",
+  "owner": "TheISCTeam",
+  "name": "isc_bridge",
+  "commit": "81ae372a6383951796709c55c7687a3b80618601",
+  "corpus_version": "7.3.0@6bb2cbf",
+  "model": "claude-opus-5",
+  "started_at": null,
+  "finished_at": "2026-09-11T00:00:00.000Z",
+  "report_sha256": "59e31ac17b5439a0b6456943f85810faf893f1adf8610111b355725348b3c853",
+  "counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 4,
+    "low": 8,
+    "info": 1
+  },
+  "highest_severity": 6,
+  "visibility": "public_redacted",
+  "submitter_verified": false,
+  "attestation": {
+    "tx": "3fn4kykyAjycMydMZC6rwx9QLrJgxKYqrqPpV85kHipjMYhBk8bSEmTVNyeEyxBnsWKzcFP6jqGVzyZLU8QD1j4L",
+    "pda": "7kSbsesa8qUUvuveED3jXFiCk2yXbabeD2YcacyiQwDY",
+    "program_id": "sXtvdoheTtFBukx8vCppJHhiiJHW2xa3xc5KaPAhzkC"
+  },
+  "usage": {
+    "input_tokens": 1346,
+    "output_tokens": 216516,
+    "cache_read_tokens": 12565913,
+    "cache_write_tokens": 430910,
+    "cost_usd": 14.395774
+  },
+  "parser": {
+    "format": "internal",
+    "declared_counts": {
+      "critical": 0,
+      "high": 0,
+      "medium": 4,
+      "low": 8,
+      "info": 1
+    },
+    "risk_score": 6,
+    "warnings": []
+  },
+  "job_id": null,
+  "tier": "manual"
+}

@@ -1,0 +1,43 @@
+{
+  "repo": "https://github.com/streamflow-finance/streamflow-program",
+  "owner": "streamflow-finance",
+  "name": "streamflow-program",
+  "commit": "673f9641041465bf2b8031f166b05e6f96b48ff5",
+  "corpus_version": "auditor-skill@4.3",
+  "model": "claude-opus-4-5",
+  "started_at": null,
+  "finished_at": "2026-06-20T00:00:00.000Z",
+  "report_sha256": "11ac6932834388ad3c2e15a52cedb534edabae3a0698a44262fe0a3cffcf9d15",
+  "counts": {
+    "critical": 2,
+    "high": 3,
+    "medium": 3,
+    "low": 2,
+    "info": 0
+  },
+  "highest_severity": 10,
+  "visibility": "public_redacted",
+  "submitter_verified": false,
+  "attestation": null,
+  "usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cache_read_tokens": 0,
+    "cache_write_tokens": 0,
+    "cost_usd": 0
+  },
+  "parser": {
+    "format": "legacy",
+    "declared_counts": {
+      "critical": 2,
+      "high": 3,
+      "medium": 3,
+      "low": 2,
+      "info": 0
+    },
+    "risk_score": 10,
+    "warnings": []
+  },
+  "job_id": null,
+  "tier": "manual"
+}

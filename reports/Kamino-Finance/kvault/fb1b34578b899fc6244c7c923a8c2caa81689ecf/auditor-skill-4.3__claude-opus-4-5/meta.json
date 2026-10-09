@@ -1,0 +1,47 @@
+{
+  "repo": "https://github.com/Kamino-Finance/kvault",
+  "owner": "Kamino-Finance",
+  "name": "kvault",
+  "commit": "fb1b34578b899fc6244c7c923a8c2caa81689ecf",
+  "corpus_version": "auditor-skill@4.3",
+  "model": "claude-opus-4-5",
+  "started_at": null,
+  "finished_at": "2026-09-10T19:59:24.187Z",
+  "report_sha256": "7756f7eba85186c5a85b97402184bc7a7c73a847374ad6c3a964939e9771a14e",
+  "counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0,
+    "low": 0,
+    "info": 0
+  },
+  "highest_severity": null,
+  "visibility": "public_redacted",
+  "submitter_verified": false,
+  "attestation": {
+    "tx": "4A55oEZAc7aLZiQwRvuMHRWqPRTtzS8Hz1hErmaNqgXFenybu8RfjGiHXU5bH7SMLFhS5QqZv7MZj6BXHS5o7ZE7",
+    "pda": "6czjK5nSm56ysdVmSxMX3UJdV7yJPNJJmhrWRirvRsMt",
+    "program_id": "sXtvdoheTtFBukx8vCppJHhiiJHW2xa3xc5KaPAhzkC"
+  },
+  "usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cache_read_tokens": 0,
+    "cache_write_tokens": 0,
+    "cost_usd": 0
+  },
+  "parser": {
+    "format": "legacy",
+    "declared_counts": {
+      "critical": 0,
+      "high": 0,
+      "medium": 0,
+      "low": 0,
+      "info": 0
+    },
+    "risk_score": null,
+    "warnings": []
+  },
+  "job_id": null,
+  "tier": "manual"
+}

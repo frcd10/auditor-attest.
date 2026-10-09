@@ -1,0 +1,43 @@
+{
+  "repo": "https://github.com/port-finance/variable-rate-lending",
+  "owner": "port-finance",
+  "name": "variable-rate-lending",
+  "commit": "bdc4ebf955669715c9c6741a1c006288efeb0290",
+  "corpus_version": "auditor-skill@4.3",
+  "model": "claude-opus-4-5",
+  "started_at": null,
+  "finished_at": "2026-09-10T19:59:53.348Z",
+  "report_sha256": "b0dcf8f8370d26a4202a4c2c0f87ceff489d092f300076ed1cedef5b0d0ae45d",
+  "counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 2,
+    "low": 1,
+    "info": 0
+  },
+  "highest_severity": 6,
+  "visibility": "public_redacted",
+  "submitter_verified": false,
+  "attestation": null,
+  "usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cache_read_tokens": 0,
+    "cache_write_tokens": 0,
+    "cost_usd": 0
+  },
+  "parser": {
+    "format": "legacy",
+    "declared_counts": {
+      "critical": 0,
+      "high": 0,
+      "medium": 2,
+      "low": 1,
+      "info": 0
+    },
+    "risk_score": 6,
+    "warnings": []
+  },
+  "job_id": null,
+  "tier": "manual"
+}

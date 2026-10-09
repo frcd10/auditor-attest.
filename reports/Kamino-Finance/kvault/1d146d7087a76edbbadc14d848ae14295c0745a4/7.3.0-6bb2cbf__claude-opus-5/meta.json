@@ -1,0 +1,43 @@
+{
+  "repo": "https://github.com/Kamino-Finance/kvault",
+  "owner": "Kamino-Finance",
+  "name": "kvault",
+  "commit": "1d146d7087a76edbbadc14d848ae14295c0745a4",
+  "corpus_version": "7.3.0@6bb2cbf",
+  "model": "claude-opus-5",
+  "started_at": null,
+  "finished_at": "2026-09-11T00:00:00.000Z",
+  "report_sha256": "f1ad9bbafe609db4b436e4a095d01be04c0c2ba8dfa4a5c3ca00d155891ac1bc",
+  "counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 3,
+    "low": 10,
+    "info": 1
+  },
+  "highest_severity": 5,
+  "visibility": "public_redacted",
+  "submitter_verified": false,
+  "attestation": null,
+  "usage": {
+    "input_tokens": 1372,
+    "output_tokens": 311936,
+    "cache_read_tokens": 19989206,
+    "cache_write_tokens": 548568,
+    "cost_usd": 21.228413
+  },
+  "parser": {
+    "format": "internal",
+    "declared_counts": {
+      "critical": 0,
+      "high": 0,
+      "medium": 3,
+      "low": 10,
+      "info": 1
+    },
+    "risk_score": 5,
+    "warnings": []
+  },
+  "job_id": null,
+  "tier": "manual"
+}

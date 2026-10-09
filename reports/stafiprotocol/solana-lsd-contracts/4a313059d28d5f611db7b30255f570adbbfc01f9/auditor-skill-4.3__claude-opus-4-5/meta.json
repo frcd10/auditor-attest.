@@ -1,0 +1,43 @@
+{
+  "repo": "https://github.com/stafiprotocol/solana-lsd-contracts",
+  "owner": "stafiprotocol",
+  "name": "solana-lsd-contracts",
+  "commit": "4a313059d28d5f611db7b30255f570adbbfc01f9",
+  "corpus_version": "auditor-skill@4.3",
+  "model": "claude-opus-4-5",
+  "started_at": null,
+  "finished_at": "2026-06-20T00:00:00.000Z",
+  "report_sha256": "8b05dad7529004b311e5760353f6cb67ba53c92f819ce8b84d57507569ee8217",
+  "counts": {
+    "critical": 0,
+    "high": 0,
+    "medium": 2,
+    "low": 3,
+    "info": 1
+  },
+  "highest_severity": 6,
+  "visibility": "public_redacted",
+  "submitter_verified": false,
+  "attestation": null,
+  "usage": {
+    "input_tokens": 0,
+    "output_tokens": 0,
+    "cache_read_tokens": 0,
+    "cache_write_tokens": 0,
+    "cost_usd": 0
+  },
+  "parser": {
+    "format": "legacy",
+    "declared_counts": {
+      "critical": 0,
+      "high": 0,
+      "medium": 2,
+      "low": 3,
+      "info": 1
+    },
+    "risk_score": 5,
+    "warnings": []
+  },
+  "job_id": null,
+  "tier": "manual"
+}

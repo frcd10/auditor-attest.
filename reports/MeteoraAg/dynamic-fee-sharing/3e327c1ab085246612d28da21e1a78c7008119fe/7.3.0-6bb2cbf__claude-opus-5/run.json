@@ -1,0 +1,128 @@
+{
+  "duration_api_ms": 1240378,
+  "stop_reason": "end_turn",
+  "session_id": "d927b3e7-393f-47fa-ae98-ead94be2c983",
+  "total_cost_usd": 22.54344099999999,
+  "usage": {
+    "input_tokens": 172,
+    "cache_creation_input_tokens": 491658,
+    "cache_read_input_tokens": 19946208,
+    "output_tokens": 306064,
+    "output_tokens_details": {
+      "thinking_tokens": 102948
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 491658,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "not_available",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 13,
+        "cache_read_input_tokens": 467676,
+        "cache_creation_input_tokens": 2464,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 2464
+        },
+        "type": "message"
+      }
+    ],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 1222,
+      "outputTokens": 15,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.001297,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000,
+      "thinkingTokens": 0,
+      "canonicalModel": "claude-haiku-4-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    },
+    "claude-opus-5": {
+      "inputTokens": 172,
+      "outputTokens": 306064,
+      "cacheReadInputTokens": 19946208,
+      "cacheCreationInputTokens": 491658,
+      "webSearchRequests": 0,
+      "costUSD": 22.542143999999997,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000,
+      "thinkingTokens": 102948,
+      "canonicalModel": "claude-opus-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_01C3Cr8Hbju6em26GeB2197E",
+      "tool_input": {
+        "command": "cd \"/home/felip/dev/auditor-site/examples i runned local/Meteora/dynamic-fee-sharing\" && wc -l $(git ls-files '*.rs' '*.toml' '*.md' '*.json' '*.yml' | grep -v idls/ | grep -v Cargo.lock | grep -v bun.lock) 2>/dev/null | sort -n",
+        "description": "Count lines in source files"
+      }
+    },
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_01B2zkhgFEfaNGEN2owBzzmj",
+      "tool_input": {
+        "command": "cd \"/home/felip/dev/auditor-site/examples i runned local/Meteora/dynamic-fee-sharing\" && grep -oE '^\\[[A-Z/*0-9-]+\\] +(AV|AC|AR|CPI|PDA|EXT|RE|SM|ECON|OPS|FV|KV)-[0-9]{3}' audit_2/REPORT.md | sed -E 's/^\\[([A-Z/*0-9-]+)\\] +(AV|AC|AR|CPI|PDA|EXT|RE|SM|ECON|OPS|FV|KV)-.*/\\1 \\2/' | awk '{v=$1; sub(/-[0-9]+$/,\"\",v); sub(/\\*$/,\"\",v); grp=($2==\"KV\")?\"KV\":\"CHK\"; c[grp\" \"v]++} END {for (k in c) print k, c[k]}' | sort",
+        "description": "Tally verdict types for checklist items vs known vectors"
+      }
+    }
+  ],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "is_error": false,
+  "num_turns": 128,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "audit_2/REPORT.md",
+  "ttft_ms": 1406,
+  "type": "result",
+  "duration_ms": 1240636,
+  "uuid": "c971c05b-2b2b-4298-9a48-370b30836caf",
+  "ttft_stream_ms": 1264,
+  "time_to_request_ms": 41,
+  "first_content_frame_ms": 1264,
+  "queued_turn_count": 0,
+  "result_index": 0
+}

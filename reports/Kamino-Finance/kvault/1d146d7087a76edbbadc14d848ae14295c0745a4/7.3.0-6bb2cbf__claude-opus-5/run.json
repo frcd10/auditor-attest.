@@ -1,0 +1,136 @@
+{
+  "duration_api_ms": 1322866,
+  "stop_reason": "end_turn",
+  "session_id": "7af5d55e-44fb-4b27-a047-0c02bd9669ac",
+  "total_cost_usd": 23.280355000000004,
+  "usage": {
+    "input_tokens": 150,
+    "cache_creation_input_tokens": 548568,
+    "cache_read_input_tokens": 19989206,
+    "output_tokens": 311921,
+    "output_tokens_details": {
+      "thinking_tokens": 95249
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 548568,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "not_available",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 44,
+        "cache_read_input_tokens": 558031,
+        "cache_creation_input_tokens": 1162,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 1162
+        },
+        "type": "message"
+      }
+    ],
+    "speed": "standard"
+  },
+  "modelUsage": {
+    "claude-haiku-4-5-20251001": {
+      "inputTokens": 1222,
+      "outputTokens": 15,
+      "cacheReadInputTokens": 0,
+      "cacheCreationInputTokens": 0,
+      "webSearchRequests": 0,
+      "costUSD": 0.001297,
+      "contextWindow": 200000,
+      "maxOutputTokens": 32000,
+      "thinkingTokens": 0,
+      "canonicalModel": "claude-haiku-4-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    },
+    "claude-opus-5": {
+      "inputTokens": 150,
+      "outputTokens": 311921,
+      "cacheReadInputTokens": 19989206,
+      "cacheCreationInputTokens": 548568,
+      "webSearchRequests": 0,
+      "costUSD": 23.279058000000003,
+      "contextWindow": 1000000,
+      "maxOutputTokens": 64000,
+      "thinkingTokens": 95249,
+      "canonicalModel": "claude-opus-5",
+      "provider": "firstParty",
+      "costBasis": "list"
+    }
+  },
+  "permission_denials": [
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_01DsrhEfHgjTKQTBmgvLEbce",
+      "tool_input": {
+        "command": "cd \"/home/felip/dev/auditor-site/examples i runned local/Kamino/kvault\" && for f in Anchor.toml Cargo.toml rust-toolchain.toml .gitignore README.md NOTICE programs/kvault/Cargo.toml; do echo \"===== $f =====\"; cat -n \"$f\"; done",
+        "description": "Read root config files"
+      }
+    },
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_0168MYYNANkAY2h5xxjE1Jm5",
+      "tool_input": {
+        "command": "cd \"/home/felip/dev/auditor-site/examples i runned local/Kamino/kvault\" && echo \"--- line counts programs ---\" && wc -l $(git ls-files 'programs/**/*.rs') | sort -n && echo \"--- libs ---\" && wc -l $(git ls-files 'libs/**/*.rs') | sort -n | tail -20",
+        "description": "Count lines per Rust file"
+      }
+    },
+    {
+      "tool_name": "Bash",
+      "tool_use_id": "toolu_01FKVET8dLiJzcTWKUJcuNUM",
+      "tool_input": {
+        "command": "cd \"/home/felip/dev/auditor-site/examples i runned local/Kamino/kvault\" && wc -l $(git ls-files 'programs/kvault/src/*.rs' 'programs/kvault/src/**/*.rs') | tail -1 && echo \"--- handlers ---\" && wc -l programs/kvault/src/handlers/*.rs | tail -1 && echo \"--- ops ---\" && wc -l programs/kvault/src/operations/*.rs | tail -1 && echo \"--- state ---\" && wc -l programs/kvault/src/state/*.rs programs/kvault/src/state.rs | tail -1 && echo \"--- utils ---\" && wc -l programs/kvault/src/utils/*.rs | tail -1 && echo \"--- libs ---\" && wc -l $(git ls-files 'libs/**/*.rs') | tail -1",
+        "description": "Count lines of code in program subdirectories"
+      }
+    }
+  ],
+  "terminal_reason": "completed",
+  "fast_mode_state": "off",
+  "fast_mode_disabled_reason": "sdk_opt_in_required",
+  "subagent_stats": {
+    "spawned": 0,
+    "requested": {
+      "background": 0,
+      "foreground": 0,
+      "unset": 0
+    },
+    "started_in_background": 0,
+    "max_depth": 0,
+    "spawned_by_subagents": 0,
+    "completed": 0,
+    "failed": 0,
+    "killed": {
+      "parent": 0,
+      "user": 0,
+      "system": 0
+    },
+    "refused": {
+      "depth_limit": 0,
+      "concurrency_limit": 0,
+      "budget": 0
+    },
+    "by_type": {}
+  },
+  "is_error": false,
+  "num_turns": 147,
+  "subtype": "success",
+  "api_error_status": null,
+  "result": "/home/felip/dev/auditor-site/examples i runned local/Kamino/kvault/audit_2/REPORT.md",
+  "ttft_ms": 1165,
+  "type": "result",
+  "duration_ms": 1322791,
+  "uuid": "ea8581be-80ca-4e47-b984-650ef900227b",
+  "ttft_stream_ms": 984,
+  "time_to_request_ms": 42,
+  "first_content_frame_ms": 984,
+  "queued_turn_count": 0,
+  "result_index": 0
+}
