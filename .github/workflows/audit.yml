@@ -1,0 +1,63 @@
+# One audit per run, started by the site (workflow_dispatch with the job id).
+# The machine is disposable: it clones the audited commit, runs the corpus with Claude
+# Code on the user's own key, attests the report on-chain, commits the report here and
+# updates the database. Nothing from the audited repository is ever executed.
+name: audit
+
+on:
+  workflow_dispatch:
+    inputs:
+      job_id:
+        description: "Job id (from the site's database)"
+        required: true
+        type: string
+
+concurrency:
+  group: audit-${{ inputs.job_id }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 1
+          persist-credentials: true
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build shared packages
+        run: pnpm -r --filter './packages/**' build
+
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Run the audit
+        env:
+          JOB_ID: ${{ inputs.job_id }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          SITE_URL: ${{ vars.SITE_URL }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          BYOK_KEK: ${{ secrets.BYOK_KEK }}
+          ATTESTER_KEYPAIR_JSON: ${{ secrets.ATTESTER_KEYPAIR_JSON }}
+          AUDIT_ATTEST_PROGRAM_ID: ${{ vars.AUDIT_ATTEST_PROGRAM_ID || 'sXtvdoheTtFBukx8vCppJHhiiJHW2xa3xc5KaPAhzkC' }}
+          RPC_URL: ${{ vars.RPC_URL || 'https://api.devnet.solana.com' }}
+          CLUSTER: devnet
+          CORPUS_VERSION: 7.3.0@6bb2cbf
+          MAX_JOB_MINUTES: "120"
+          MAX_BUDGET_USD: ${{ vars.MAX_BUDGET_USD }}
+        run: pnpm exec tsx scripts/ci-audit.ts

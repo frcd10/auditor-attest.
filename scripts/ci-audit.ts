@@ -88,7 +88,13 @@ async function main() {
     apiKey = decryptSecret(ciphertext, env.byokKek);
 
     const scope = job.scope === "program" ? "program" : "full";
-    const budget = job.budgetUsd ? Number(job.budgetUsd) : budgetFor({ estCostUsd: Number(job.quote.estCostUsd) });
+    let budget = job.budgetUsd ? Number(job.budgetUsd) : budgetFor({ estCostUsd: Number(job.quote.estCostUsd) });
+    // Operator cap (repository variable MAX_BUDGET_USD): used for smoke tests of the pipeline.
+    const cap = Number(process.env.MAX_BUDGET_USD || "");
+    if (Number.isFinite(cap) && cap > 0 && cap < budget) {
+      budget = cap;
+      await jobEvent(jobId, `operator cap: spend limited to $${cap} for this run (pipeline test)`, undefined, "warn");
+    }
 
     // 3. clone
     await jobEvent(jobId, "cloning the audited commit", { commit: job.commitSha });

@@ -56,3 +56,6 @@ test-ledger/
 examples i runned local/
 audit-failures/
 audit-all.log
+
+# operator secrets scratch, never committed
+para-colar.txt
