@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { effectiveVisibility } from "@auditor/report";
 import { enabledModels, loadModels } from "@auditor/pricing";
+import { CORPUS_URL, CorpusCard } from "@/components/CorpusCard";
 import { RecentJobs } from "@/components/RecentJobs";
 import { SeverityBadges } from "@/components/SeverityBadges";
 import { StatTile } from "@/components/StatTile";
@@ -43,21 +44,24 @@ export default async function Home() {
   return (
     <div className="space-y-16 pb-8">
       {/* Hero */}
-      <section className="relative overflow-hidden">
-                <div className="container-x relative pt-14 pb-6 sm:pt-20">
-          <h1 className="h-display mt-2 max-w-4xl text-4xl sm:text-5xl">
-            Security audits for Solana programs, with a record on-chain.
-          </h1>
-          <p className="mt-6 max-w-2xl text-lg text-[var(--muted)]">
-            Auditor Dog runs the open-source auditor-skill corpus against a public GitHub repository: 20 checklists, 1,413 items and 136 known attack vectors, applied by a single model session with read-only tools. The report is published in full, and its hash, the commit, the corpus version, the model and the severity counts are written to a Solana account anyone can read.
-          </p>
-          <form id="start" action={createJob} className="mt-10 flex max-w-2xl flex-col gap-3 sm:flex-row">
-            <input name="url" type="url" required placeholder="https://github.com/owner/repo" className="input mono flex-1 text-sm" />
-            <button type="submit" className="btn btn-accent">Estimate the cost</button>
-          </form>
-          <p className="mt-3 text-xs text-[var(--dim)]">
-            Public repositories only. The estimate is free. Append <span className="mono">/tree/&lt;branch-or-sha&gt;</span> to pin a ref. Runs on your own Anthropic API key; we charge nothing.
-          </p>
+      <section className="container-x pt-14 pb-6 sm:pt-20">
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] lg:items-start">
+          <div>
+            <h1 className="h-display mt-2 text-4xl sm:text-5xl">
+              Security audits for Solana programs, with a record on-chain.
+            </h1>
+            <p className="mt-6 text-lg text-[var(--muted)]">
+              Auditor Dog runs the open-source <a href={CORPUS_URL} target="_blank" rel="noreferrer" className="text-white underline">auditor-skill</a> corpus by solanabr against a public GitHub repository: 20 checklists, 1,413 items and 136 known attack vectors, applied by a single model session with read-only tools. The report is published in full; its hash, the commit, the corpus version, the model and the severity counts are written to a Solana account anyone can read.
+            </p>
+            <form id="start" action={createJob} className="mt-10 flex flex-col gap-3 sm:flex-row">
+              <input name="url" type="url" required placeholder="https://github.com/owner/repo" className="input mono flex-1 text-sm" />
+              <button type="submit" className="btn btn-accent">Estimate the cost</button>
+            </form>
+            <p className="mt-3 text-xs text-[var(--dim)]">
+              Public repositories only. The estimate is free. Append <span className="mono">/tree/&lt;branch-or-sha&gt;</span> to pin a ref. Runs on your own Anthropic API key; we charge nothing.
+            </p>
+          </div>
+          <CorpusCard />
         </div>
       </section>
 
@@ -133,7 +137,9 @@ export default async function Home() {
       {/* Three ways */}
       <section id="ways" className="container-x scroll-mt-24">
         <h2 className="h-section text-3xl sm:text-4xl">Run it where you prefer</h2>
-        <p className="mt-3 max-w-2xl text-[var(--muted)]">The corpus, the runner and this site are open source. The same audit can run through the site, inside your own Claude Code session, or from a clone of this repository.</p>
+        <p className="mt-3 max-w-2xl text-[var(--muted)]">
+          Two repositories, both open source. The <b className="text-white">corpus</b> (<a href={CORPUS_URL} target="_blank" rel="noreferrer" className="underline">solanabr/auditor-skill</a>) is the audit itself: checklists, known vectors, prompts. This <b className="text-white">site</b> (<a href={repoUrl} target="_blank" rel="noreferrer" className="underline">{repo}</a>) is the runner, the attestation program and the report pages around it. To audit on your own machine you need only the corpus.
+        </p>
         <div className="mt-8 grid gap-4 md:grid-cols-3">
           <div className="card p-6">
             <div className="text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">Through this site</div>
@@ -141,15 +147,15 @@ export default async function Home() {
             <Link href="/#start" className="btn btn-outline btn-sm mt-4">Submit a repository</Link>
           </div>
           <div className="card p-6">
-            <div className="text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">Inside Claude Code</div>
-            <p className="mt-3 text-sm text-[var(--muted)]">The auditor-skill corpus is a Claude Code plugin. Load it in your own repository and run the audit locally, on your subscription or key. No upload, no third party.</p>
+            <div className="text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">Inside Claude Code (the corpus alone)</div>
+            <p className="mt-3 text-sm text-[var(--muted)]">Clone solanabr/auditor-skill, load it as a Claude Code plugin in your own repository and run the audit locally, on your subscription or key. No upload, no third party, nothing of ours involved.</p>
             <pre className="mono mt-4 overflow-x-auto rounded-md border border-[var(--border)] bg-black/40 p-3 text-xs">{`git clone https://github.com/solanabr/auditor-skill
 claude --plugin-dir ./auditor-skill
 > /auditor:audit --scope program`}</pre>
           </div>
           <div className="card p-6">
-            <div className="text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">From a clone</div>
-            <p className="mt-3 text-sm text-[var(--muted)]">Site, runner, attestation program and report pipeline in one repository. One command brings it up locally; the local runner audits any clone with your own Claude Code login.</p>
+            <div className="text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">Self-host this site</div>
+            <p className="mt-3 text-sm text-[var(--muted)]">Site, runner, attestation program and report pipeline in one repository, with the corpus as a pinned submodule. One command brings it up locally; the local runner audits any clone with your own Claude Code login.</p>
             <pre className="mono mt-4 overflow-x-auto rounded-md border border-[var(--border)] bg-black/40 p-3 text-xs">{`git clone --recurse-submodules ${repoUrl}
 cd ${repo.split("/")[1]?.replace(/\.$/, "")} && pnpm dev
 pnpm audit:local -- Org/repo`}</pre>
