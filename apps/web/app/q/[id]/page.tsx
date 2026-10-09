@@ -11,6 +11,7 @@ import { int, shortSha, usd, when } from "@/lib/format";
 import { siteUrl } from "@/lib/env";
 import { startAudit } from "../../actions";
 import { Poll } from "./Poll";
+import { PrivateLinkGate } from "@/components/PrivateLinkGate";
 
 export const dynamic = "force-dynamic";
 
@@ -55,6 +56,7 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
   return (
     <div className="container-x space-y-5 pt-8 pb-6">
       <Poll active={LIVE.has(job.status)} />
+      {job.status === "done" && job.report && job.report.visibility === "private" && reportHref && <PrivateLinkGate jobId={job.id} link={`${siteUrl()}${reportHref}`} />}
       <RememberJob id={job.id} owner={job.owner} repo={job.repo} at={job.createdAt.getTime()} />
 
       {/* Header */}
