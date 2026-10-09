@@ -8,6 +8,11 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   agentRules: false,
   outputFileTracingRoot: root,
+  // Files read at request time through the filesystem (not imported), so the tracer
+  // cannot see them: the model price list and the Prisma client + query engine.
+  outputFileTracingIncludes: {
+    "/**": ["../../config/models.json", "../../pnpm-workspace.yaml", "../../packages/db/generated/**", "../../packages/db/dist/**"],
+  },
   serverExternalPackages: ["@auditor/db", "@prisma/client", "prisma"],
   poweredByHeader: false,
   async headers() {

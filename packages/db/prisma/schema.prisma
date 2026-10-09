@@ -2,8 +2,10 @@
 // Money-related amounts are Decimal(18,6) (USDC has 6 decimals). Token counts are BigInt.
 
 generator client {
-  provider = "prisma-client-js"
-  output   = "../generated/client"
+  provider      = "prisma-client-js"
+  output        = "../generated/client"
+  // native = the machine running `prisma generate`; the second is Vercel's function runtime.
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
