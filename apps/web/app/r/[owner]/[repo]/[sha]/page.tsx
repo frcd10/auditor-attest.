@@ -70,7 +70,7 @@ export default async function ReportPage({ params, searchParams }: { params: Pro
       </section>
 
       {redacted && (
-        <div className="rounded-2xl border border-[var(--high)] bg-[#2a1f12] p-4 text-sm">
+        <div className="rounded-md border border-[var(--high)] bg-[#2a1f12] p-4 text-sm">
           <b>Critical and High findings are withheld</b> until {row.redactUntil ? row.redactUntil.toISOString().slice(0, 10) : "the disclosure date"}. The counts above are exact and match the on-chain attestation.
         </div>
       )}
@@ -98,7 +98,7 @@ export default async function ReportPage({ params, searchParams }: { params: Pro
           {visibility !== "private" && (
             <details className="mt-4 text-xs text-[var(--muted)]">
               <summary className="cursor-pointer">README badge</summary>
-              <pre className="mono mt-2 overflow-x-auto rounded-xl border border-[var(--border)] bg-black/40 p-3">{readmeBadge}</pre>
+              <pre className="mono mt-2 overflow-x-auto rounded-md border border-[var(--border)] bg-black/40 p-3">{readmeBadge}</pre>
             </details>
           )}
         </div>

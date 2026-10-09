@@ -1,11 +1,11 @@
 @import "tailwindcss";
 
 :root {
-  --bg: #000000;
-  --panel: rgba(255, 255, 255, 0.04);
-  --panel-strong: rgba(255, 255, 255, 0.07);
-  --border: rgba(255, 255, 255, 0.12);
-  --border-strong: rgba(255, 255, 255, 0.22);
+  --bg: #0b0d12;
+  --panel: #11141b;
+  --panel-strong: #171b24;
+  --border: #262b36;
+  --border-strong: #3a4150;
   --text: #ffffff;
   --muted: #a3a3ad;
   --dim: #6b6b76;
@@ -17,7 +17,7 @@
   --medium: #ffd23f;
   --low: #4fb7ff;
   --info: #a3a3ad;
-  --gradient: linear-gradient(90deg, #9945ff 0%, #14f195 100%);
+  --gradient: #14f195;
 }
 
 html {
@@ -58,50 +58,36 @@ a:hover {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background:
-    radial-gradient(60rem 28rem at 15% -10%, rgba(153, 69, 255, 0.35), transparent 60%),
-    radial-gradient(50rem 24rem at 85% 0%, rgba(20, 241, 149, 0.22), transparent 60%);
+  background: none;
 }
 
 /* Typography */
 .h-display {
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  line-height: 1.02;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  line-height: 1.08;
 }
 .h-section {
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
 }
 .gradient-text {
-  background: var(--gradient);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  color: #fff;
 }
 .mono {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 .eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  border: 1px solid var(--border);
-  border-radius: 9999px;
-  padding: 0.35rem 0.9rem;
   font-size: 0.8rem;
   color: var(--muted);
-  background: var(--panel);
 }
 
 /* Cards */
 .card {
   background: var(--panel);
   border: 1px solid var(--border);
-  border-radius: 1.25rem;
-  backdrop-filter: blur(12px);
-  transition: border-color 0.2s ease, background 0.2s ease;
+  border-radius: 6px;
 }
 .card:hover {
   border-color: var(--border-strong);
@@ -110,8 +96,7 @@ a:hover {
   background: var(--panel-strong);
 }
 .card-gradient {
-  position: relative;
-  background: linear-gradient(135deg, rgba(153, 69, 255, 0.18), rgba(20, 241, 149, 0.1));
+  background: var(--panel-strong);
 }
 
 /* Buttons */
@@ -120,16 +105,12 @@ a:hover {
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  border-radius: 9999px;
-  padding: 0.7rem 1.4rem;
-  font-weight: 600;
-  font-size: 0.95rem;
+  border-radius: 4px;
+  padding: 0.6rem 1.1rem;
+  font-weight: 500;
+  font-size: 0.9rem;
   line-height: 1;
-  transition: transform 0.15s ease, background 0.15s ease, border-color 0.15s ease, opacity 0.15s ease;
   white-space: nowrap;
-}
-.btn:active {
-  transform: translateY(1px);
 }
 .btn-primary {
   background: #ffffff;
@@ -146,7 +127,7 @@ a:hover {
   background: #33f5a5;
 }
 .btn-gradient {
-  background: var(--gradient);
+  background: var(--green);
   color: #000000;
 }
 .btn-outline {
@@ -158,8 +139,8 @@ a:hover {
   background: var(--panel-strong);
 }
 .btn-sm {
-  padding: 0.5rem 1rem;
-  font-size: 0.85rem;
+  padding: 0.45rem 0.8rem;
+  font-size: 0.82rem;
 }
 .btn[disabled] {
   opacity: 0.45;
@@ -169,19 +150,18 @@ a:hover {
 /* Inputs */
 .input {
   width: 100%;
-  border: 1px solid var(--border);
-  border-radius: 9999px;
-  background: rgba(0, 0, 0, 0.6);
+  border: 1px solid var(--border-strong);
+  border-radius: 4px;
+  background: #0b0d12;
   color: var(--text);
-  padding: 0.85rem 1.25rem;
+  padding: 0.6rem 0.8rem;
   outline: none;
-  transition: border-color 0.15s ease;
 }
 .input:focus {
-  border-color: var(--purple);
+  border-color: var(--green);
 }
 .input-sq {
-  border-radius: 0.75rem;
+  border-radius: 4px;
 }
 select.input {
   appearance: none;
@@ -230,8 +210,8 @@ select.input {
 .prose ul { list-style: disc; }
 .prose ol { list-style: decimal; }
 .prose li { margin: 0.25rem 0; }
-.prose code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.85em; background: rgba(255,255,255,0.08); padding: 0.1em 0.4em; border-radius: 0.35rem; }
-.prose pre { background: rgba(255,255,255,0.04); border: 1px solid var(--border); border-radius: 0.9rem; padding: 1rem; overflow-x: auto; margin: 0.9rem 0; }
+.prose code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.85em; background: rgba(255,255,255,0.08); padding: 0.1em 0.4em; border-radius: 3px; }
+.prose pre { background: #0b0d12; border: 1px solid var(--border); border-radius: 4px; padding: 1rem; overflow-x: auto; margin: 0.9rem 0; }
 .prose pre code { background: transparent; padding: 0; }
 .prose blockquote { border-left: 3px solid var(--purple); padding-left: 1rem; color: var(--muted); margin: 0.9rem 0; }
 .prose table { border-collapse: collapse; width: 100%; margin: 0.9rem 0; font-size: 0.88rem; display: block; overflow-x: auto; }

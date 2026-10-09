@@ -17,8 +17,8 @@ export function StatusPill({ status }: { status: string }) {
   const [label, color] = LABELS[status] ?? [status, "var(--muted)"];
   const live = ["quoting", "quote_running", "queued", "running", "ingesting"].includes(status);
   return (
-    <span className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-sm font-medium" style={{ borderColor: color, color, background: "rgba(0,0,0,0.5)" }}>
-      <span className={`inline-block h-2 w-2 rounded-full ${live ? "animate-pulse" : ""}`} style={{ background: color }} />
+    <span className="inline-flex items-center gap-2 rounded-sm border px-2.5 py-1 text-sm font-medium" style={{ borderColor: color, color, background: "transparent" }}>
+      <span className={`inline-block h-2 w-2 rounded-sm ${live ? "animate-pulse" : ""}`} style={{ background: color }} />
       {label}
     </span>
   );

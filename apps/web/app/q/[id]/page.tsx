@@ -83,8 +83,8 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
         )}
       </section>
 
-      {job.error && <div className="rounded-2xl border border-[var(--critical)] bg-[#2a1216] p-4 text-sm">{job.error}</div>}
-      {breakdown.archived && <div className="rounded-2xl border border-[var(--high)] bg-[#2a1f12] p-4 text-sm">This repository is archived on GitHub. You can still audit it, but nobody is maintaining it.</div>}
+      {job.error && <div className="rounded-md border border-[var(--critical)] bg-[#2a1216] p-4 text-sm">{job.error}</div>}
+      {breakdown.archived && <div className="rounded-md border border-[var(--high)] bg-[#2a1f12] p-4 text-sm">This repository is archived on GitHub. You can still audit it, but nobody is maintaining it.</div>}
 
       {/* Report ready */}
       {job.status === "done" && job.report && reportHref && (
@@ -267,16 +267,16 @@ export default async function JobPage({ params }: { params: Promise<{ id: string
                 <div className="space-y-4 text-sm">
                   <fieldset className="space-y-2">
                     <legend className="font-semibold">Disclosure</legend>
-                    <label className="flex items-start gap-3 rounded-xl border border-[var(--border)] p-3">
+                    <label className="flex items-start gap-3 rounded-md border border-[var(--border)] p-3">
                       <input type="radio" name="visibility" value="public" defaultChecked={job.visibility === "public"} className="mt-1" />
                       <span><b>Public</b>. Listed under Audits with the full report, Critical and High included. Use this for code that is already deployed and public.</span>
                     </label>
-                    <label className="flex items-start gap-3 rounded-xl border border-[var(--border)] p-3">
+                    <label className="flex items-start gap-3 rounded-md border border-[var(--border)] p-3">
                       <input type="radio" name="visibility" value="private" defaultChecked={job.visibility === "private"} className="mt-1" />
                       <span><b>Private</b>. Only you get the link. The attestation (hashes and counts, no finding text) still goes on {clusterLabel()}. The report file is committed to our public repository under a path only the link reveals.</span>
                     </label>
                   </fieldset>
-                  <label className="flex items-start gap-3 rounded-xl border border-[var(--border)] p-3">
+                  <label className="flex items-start gap-3 rounded-md border border-[var(--border)] p-3">
                     <input type="checkbox" name="confirm" required className="mt-1" />
                     <span>I created a dedicated key in a workspace with a spend limit, and I will delete it when the audit is done.</span>
                   </label>

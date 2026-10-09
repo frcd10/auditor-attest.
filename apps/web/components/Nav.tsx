@@ -12,7 +12,7 @@ export function Logo() {
 
 export function Nav() {
   return (
-    <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-black/70 backdrop-blur-xl">
+    <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-[var(--bg)] ">
       <div className="container-x flex h-16 items-center justify-between gap-6">
         <Logo />
         <nav className="hidden items-center gap-7 text-sm text-[var(--muted)] md:flex">

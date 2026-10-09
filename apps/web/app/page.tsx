@@ -41,12 +41,11 @@ export default async function Home() {
   const programId = attestProgramId() ?? "sXtvdoheTtFBukx8vCppJHhiiJHW2xa3xc5KaPAhzkC";
 
   return (
-    <div className="space-y-24 pb-8">
+    <div className="space-y-16 pb-8">
       {/* Hero */}
       <section className="relative overflow-hidden">
-        <div className="glow" />
-        <div className="container-x relative pt-20 pb-10 sm:pt-28">
-          <h1 className="h-display mt-2 max-w-4xl text-5xl sm:text-6xl lg:text-7xl">
+                <div className="container-x relative pt-14 pb-6 sm:pt-20">
+          <h1 className="h-display mt-2 max-w-4xl text-4xl sm:text-5xl">
             Security audits for Solana programs, with a record on-chain.
           </h1>
           <p className="mt-6 max-w-2xl text-lg text-[var(--muted)]">
@@ -144,14 +143,14 @@ export default async function Home() {
           <div className="card p-6">
             <div className="text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">Inside Claude Code</div>
             <p className="mt-3 text-sm text-[var(--muted)]">The auditor-skill corpus is a Claude Code plugin. Load it in your own repository and run the audit locally, on your subscription or key. No upload, no third party.</p>
-            <pre className="mono mt-4 overflow-x-auto rounded-xl border border-[var(--border)] bg-black/40 p-3 text-xs">{`git clone https://github.com/solanabr/auditor-skill
+            <pre className="mono mt-4 overflow-x-auto rounded-md border border-[var(--border)] bg-black/40 p-3 text-xs">{`git clone https://github.com/solanabr/auditor-skill
 claude --plugin-dir ./auditor-skill
 > /auditor:audit --scope program`}</pre>
           </div>
           <div className="card p-6">
             <div className="text-sm font-semibold uppercase tracking-wide text-[var(--muted)]">From a clone</div>
             <p className="mt-3 text-sm text-[var(--muted)]">Site, runner, attestation program and report pipeline in one repository. One command brings it up locally; the local runner audits any clone with your own Claude Code login.</p>
-            <pre className="mono mt-4 overflow-x-auto rounded-xl border border-[var(--border)] bg-black/40 p-3 text-xs">{`git clone --recurse-submodules ${repoUrl}
+            <pre className="mono mt-4 overflow-x-auto rounded-md border border-[var(--border)] bg-black/40 p-3 text-xs">{`git clone --recurse-submodules ${repoUrl}
 cd ${repo.split("/")[1]?.replace(/\.$/, "")} && pnpm dev
 pnpm audit:local -- Org/repo`}</pre>
           </div>
@@ -195,7 +194,7 @@ pnpm audit:local -- Org/repo`}</pre>
           </div>
           <ul className="mono grid grid-cols-1 gap-1 text-sm sm:grid-cols-2">
             {["repo_hash = sha256(url)", "commit_sha", "corpus_version", "model_id", "report_sha256", "counts[critical…info]", "visibility", "timestamp", "attester"].map((f) => (
-              <li key={f} className="rounded-lg border border-[var(--border)] bg-black/40 px-3 py-2">{f}</li>
+              <li key={f} className="rounded-md border border-[var(--border)] bg-black/40 px-3 py-2">{f}</li>
             ))}
           </ul>
         </div>
